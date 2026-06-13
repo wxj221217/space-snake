@@ -1,0 +1,1694 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="x5-fullscreen" content="true">
+  <meta name="x5-page-mode" content="app">
+  <title>星际飞船贪吃蛇</title>
+  <style>
+    :root {
+      --bg: #050818;
+      --panel: rgba(10, 18, 44, 0.82);
+      --panel-strong: rgba(12, 24, 58, 0.94);
+      --line: rgba(148, 197, 255, 0.24);
+      --text: #f4fbff;
+      --muted: #a9bad8;
+      --accent: #61f2d5;
+      --accent-2: #8fc7ff;
+      --gold: #ffd166;
+      --danger: #ff6b7a;
+      --shadow: rgba(0, 0, 0, 0.35);
+      --app-height: 100vh;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-rounded, "SF Pro Rounded", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      letter-spacing: 0;
+      overscroll-behavior: none;
+    }
+
+    body {
+      touch-action: none;
+      user-select: none;
+    }
+
+    button {
+      border: 0;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app {
+      position: relative;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      width: 100%;
+      height: var(--app-height);
+      min-height: 0;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(84, 126, 255, 0.3), transparent 30%),
+        radial-gradient(circle at 86% 18%, rgba(97, 242, 213, 0.18), transparent 26%),
+        linear-gradient(160deg, #050818 0%, #0b1230 52%, #111a3e 100%);
+    }
+
+    .hud {
+      z-index: 4;
+      display: grid;
+      grid-template-columns: minmax(156px, 1.35fr) repeat(4, minmax(94px, auto)) auto;
+      gap: 10px;
+      align-items: stretch;
+      padding: max(12px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 12px max(14px, env(safe-area-inset-left));
+      background: linear-gradient(180deg, rgba(5, 8, 24, 0.92), rgba(5, 8, 24, 0.58));
+      border-bottom: 1px solid rgba(148, 197, 255, 0.18);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand,
+    .stat,
+    .action-group {
+      min-width: 0;
+      border: 1px solid var(--line);
+      background: rgba(8, 15, 38, 0.72);
+      box-shadow: 0 10px 24px var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+    }
+
+    .ship-badge {
+      position: relative;
+      flex: 0 0 38px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 62% 34%, #ffffff 0 7%, transparent 8%),
+        linear-gradient(135deg, #8fc7ff 0 45%, #61f2d5 46% 100%);
+      box-shadow: 0 0 18px rgba(97, 242, 213, 0.48);
+    }
+
+    .ship-badge::before {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 15px;
+      width: 24px;
+      height: 8px;
+      border-radius: 999px;
+      background: #071026;
+      transform: rotate(-32deg);
+    }
+
+    .brand-title {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .brand-title strong {
+      overflow: hidden;
+      font-size: clamp(17px, 2.2vw, 22px);
+      line-height: 1.08;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .brand-title span {
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .stat {
+      display: grid;
+      align-content: center;
+      min-height: 58px;
+      padding: 8px 10px;
+      border-radius: 8px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.1;
+    }
+
+    .stat strong {
+      overflow: hidden;
+      margin-top: 4px;
+      font-size: 21px;
+      line-height: 1;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .mission {
+      gap: 6px;
+    }
+
+    .mission strong {
+      font-size: 18px;
+    }
+
+    .meter {
+      width: 100%;
+      height: 6px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(169, 186, 216, 0.18);
+    }
+
+    .meter span {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--gold));
+      transition: width 180ms ease;
+    }
+
+    .action-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 8px;
+      border-radius: 8px;
+    }
+
+    .command {
+      min-width: 76px;
+      min-height: 46px;
+      padding: 0 14px;
+      border-radius: 8px;
+      background: rgba(143, 199, 255, 0.16);
+      box-shadow: inset 0 0 0 1px rgba(143, 199, 255, 0.22);
+      font-weight: 800;
+      transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease;
+    }
+
+    .command.primary {
+      color: #061226;
+      background: linear-gradient(135deg, var(--accent), var(--gold));
+      box-shadow: 0 0 20px rgba(97, 242, 213, 0.36);
+    }
+
+    .command:active,
+    .pad-button:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    .stage {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    #gameCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      pointer-events: none;
+    }
+
+    .overlay[hidden] {
+      display: none;
+    }
+
+    .overlay-panel {
+      width: min(520px, 100%);
+      padding: 22px;
+      border: 1px solid rgba(143, 199, 255, 0.36);
+      border-radius: 8px;
+      background: var(--panel-strong);
+      box-shadow: 0 22px 52px rgba(0, 0, 0, 0.42);
+      pointer-events: auto;
+      text-align: center;
+    }
+
+    .overlay-panel h1 {
+      margin: 0;
+      font-size: clamp(26px, 6vw, 46px);
+      line-height: 1.05;
+    }
+
+    .overlay-panel p {
+      margin: 12px auto 18px;
+      color: var(--muted);
+      font-size: clamp(15px, 2.6vw, 18px);
+      line-height: 1.45;
+    }
+
+    .rules-menu {
+      position: absolute;
+      inset: 0;
+      z-index: 6;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(3, 8, 22, 0.52);
+      backdrop-filter: blur(8px);
+    }
+
+    .rules-menu[hidden] {
+      display: none;
+    }
+
+    .rules-card {
+      width: min(460px, 100%);
+      padding: 18px;
+      border: 1px solid rgba(143, 199, 255, 0.36);
+      border-radius: 8px;
+      background: var(--panel-strong);
+      box-shadow: 0 22px 52px rgba(0, 0, 0, 0.42);
+    }
+
+    .rules-head {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .rules-head h2 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .rules-list {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    .rules-list li + li {
+      margin-top: 6px;
+    }
+
+    .toast {
+      position: absolute;
+      left: 50%;
+      bottom: 24px;
+      z-index: 5;
+      max-width: min(520px, calc(100% - 32px));
+      padding: 10px 14px;
+      border: 1px solid rgba(97, 242, 213, 0.42);
+      border-radius: 8px;
+      background: rgba(6, 18, 42, 0.92);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.34);
+      color: var(--text);
+      font-weight: 800;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 12px);
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .controls {
+      z-index: 4;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 10px max(14px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+      background: linear-gradient(0deg, rgba(5, 8, 24, 0.94), rgba(5, 8, 24, 0.6));
+      border-top: 1px solid rgba(148, 197, 255, 0.18);
+      backdrop-filter: blur(12px);
+    }
+
+    .control-note {
+      justify-self: start;
+      max-width: 220px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .dpad {
+      display: grid;
+      grid-template-columns: repeat(3, 66px);
+      grid-template-rows: repeat(3, 54px);
+      gap: 8px;
+      justify-content: center;
+      touch-action: none;
+    }
+
+    .pad-button {
+      min-width: 54px;
+      min-height: 54px;
+      border-radius: 8px;
+      background: rgba(143, 199, 255, 0.18);
+      box-shadow:
+        inset 0 0 0 1px rgba(143, 199, 255, 0.28),
+        0 10px 20px rgba(0, 0, 0, 0.24);
+      color: var(--text);
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .pad-button[data-dir="up"] {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .pad-button[data-dir="left"] {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .pad-button[data-dir="right"] {
+      grid-column: 3;
+      grid-row: 2;
+    }
+
+    .pad-button[data-dir="down"] {
+      grid-column: 2;
+      grid-row: 3;
+    }
+
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-self: end;
+      justify-content: flex-end;
+    }
+
+    @media (max-width: 860px) {
+      .app {
+        min-height: 0;
+      }
+
+      .hud {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .brand {
+        grid-column: 1 / -1;
+      }
+
+      .action-group {
+        grid-column: 1 / -1;
+        justify-content: center;
+      }
+
+      .controls {
+        grid-template-columns: auto auto;
+        justify-content: center;
+        justify-items: center;
+      }
+
+      .control-note {
+        display: none;
+      }
+
+      .quick-actions {
+        justify-self: center;
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 680px) {
+      .app {
+        grid-template-columns: minmax(0, 1fr) 244px;
+        grid-template-rows: auto minmax(0, 1fr);
+        min-height: 0;
+      }
+
+      .hud {
+        grid-column: 1 / -1;
+        padding-bottom: 8px;
+      }
+
+      .stage {
+        grid-column: 1;
+        grid-row: 2;
+      }
+
+      .controls {
+        grid-column: 2;
+        grid-row: 2;
+        grid-template-columns: 1fr;
+        align-content: center;
+        justify-items: center;
+        border-top: 0;
+        border-left: 1px solid rgba(148, 197, 255, 0.18);
+      }
+
+      .control-note {
+        display: none;
+      }
+
+      .quick-actions {
+        justify-content: center;
+        justify-self: center;
+      }
+
+      .dpad {
+        grid-template-columns: repeat(3, 58px);
+        grid-template-rows: repeat(3, 50px);
+      }
+
+      .pad-button {
+        min-width: 50px;
+        min-height: 50px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .hud {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .stat strong {
+        font-size: 18px;
+      }
+
+      .command {
+        min-width: 0;
+        flex: 1 1 94px;
+        padding: 0 10px;
+      }
+
+      .dpad {
+        grid-template-columns: repeat(3, 56px);
+        grid-template-rows: repeat(3, 46px);
+      }
+
+      .pad-button {
+        min-width: 46px;
+        min-height: 46px;
+      }
+
+      .quick-actions {
+        flex-direction: column;
+      }
+
+      .quick-actions .command {
+        width: 96px;
+        flex: 0 0 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="hud" aria-label="游戏状态">
+      <div class="brand">
+        <div class="ship-badge" aria-hidden="true"></div>
+        <div class="brand-title">
+          <strong>星际飞船贪吃蛇</strong>
+          <span id="statusText">任务待命</span>
+        </div>
+      </div>
+
+      <div class="stat">
+        <span>分数</span>
+        <strong id="scoreText">0</strong>
+      </div>
+
+      <div class="stat">
+        <span>等级</span>
+        <strong id="levelText">1</strong>
+      </div>
+
+      <div class="stat mission">
+        <span>星球目标</span>
+        <strong id="missionText">0/5</strong>
+        <div class="meter" aria-hidden="true"><span id="missionBar"></span></div>
+      </div>
+
+      <div class="stat">
+        <span>能量</span>
+        <strong id="powerText">护盾 1/5</strong>
+      </div>
+
+      <div class="action-group">
+        <button class="command primary" id="startButton" type="button">开始</button>
+        <button class="command" id="pauseButton" type="button">暂停</button>
+        <button class="command" id="rulesButton" type="button">规则</button>
+      </div>
+    </header>
+
+    <main class="stage" aria-label="游戏区域">
+      <canvas id="gameCanvas"></canvas>
+      <div class="overlay" id="overlay">
+        <section class="overlay-panel" aria-live="polite">
+          <h1 id="overlayTitle">太空任务待命</h1>
+          <p id="overlayText">收集 5 颗星球，飞船就能进入下一片星域。</p>
+          <button class="command primary" id="overlayButton" type="button">开始任务</button>
+        </section>
+      </div>
+      <div class="rules-menu" id="rulesPanel" role="dialog" aria-modal="true" hidden>
+        <section class="rules-card" aria-labelledby="rulesTitle">
+          <div class="rules-head">
+            <h2 id="rulesTitle">游戏规则</h2>
+            <button class="command" id="closeRulesButton" type="button">关闭</button>
+          </div>
+          <ul class="rules-list">
+            <li>收集星球：加分，飞船变长。</li>
+            <li>达成星球目标：进入下一星域。</li>
+            <li>撞墙、撞自己或小行星：消耗 1 层护盾。</li>
+            <li>护盾消耗后：1 秒后重新出发。</li>
+            <li>护盾为 0 再撞击：任务结束。</li>
+            <li>护盾最多 5 层，道具可补给。</li>
+            <li>穿墙开：飞出边界会从另一侧回来。</li>
+          </ul>
+        </section>
+      </div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </main>
+
+    <footer class="controls" aria-label="触屏控制">
+      <div class="control-note" aria-hidden="true"></div>
+      <div class="dpad">
+        <button class="pad-button" type="button" data-dir="up" aria-label="向上">↑</button>
+        <button class="pad-button" type="button" data-dir="left" aria-label="向左">←</button>
+        <button class="pad-button" type="button" data-dir="right" aria-label="向右">→</button>
+        <button class="pad-button" type="button" data-dir="down" aria-label="向下">↓</button>
+      </div>
+      <div class="quick-actions">
+        <button class="command" id="wallButton" type="button" aria-pressed="false">穿墙关</button>
+        <button class="command" id="restartButton" type="button">重新开始</button>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const canvas = document.querySelector("#gameCanvas");
+      const ctx = canvas.getContext("2d");
+      const ui = {
+        score: document.querySelector("#scoreText"),
+        level: document.querySelector("#levelText"),
+        mission: document.querySelector("#missionText"),
+        missionBar: document.querySelector("#missionBar"),
+        power: document.querySelector("#powerText"),
+        status: document.querySelector("#statusText"),
+        overlay: document.querySelector("#overlay"),
+        overlayTitle: document.querySelector("#overlayTitle"),
+        overlayText: document.querySelector("#overlayText"),
+        overlayButton: document.querySelector("#overlayButton"),
+        rulesPanel: document.querySelector("#rulesPanel"),
+        startButton: document.querySelector("#startButton"),
+        pauseButton: document.querySelector("#pauseButton"),
+        rulesButton: document.querySelector("#rulesButton"),
+        closeRulesButton: document.querySelector("#closeRulesButton"),
+        wallButton: document.querySelector("#wallButton"),
+        restartButton: document.querySelector("#restartButton"),
+        toast: document.querySelector("#toast")
+      };
+
+      const COLS = 36;
+      const ROWS = 26;
+      const SHIELD_MAX = 5;
+      const START_DELAY_MS = 1000;
+      const DIRECTIONS = {
+        up: { x: 0, y: -1 },
+        down: { x: 0, y: 1 },
+        left: { x: -1, y: 0 },
+        right: { x: 1, y: 0 }
+      };
+
+      const state = {
+        status: "ready",
+        score: 0,
+        level: 1,
+        missionCollected: 0,
+        totalCollected: 0,
+        shields: 1,
+        wallMode: false,
+        warpTicks: 0,
+        direction: DIRECTIONS.right,
+        nextDirection: DIRECTIONS.right,
+        ship: [],
+        planet: null,
+        powerUp: null,
+        obstacles: [],
+        particles: [],
+        flash: 0
+      };
+
+      const stars = Array.from({ length: 140 }, () => ({
+        x: Math.random(),
+        y: Math.random(),
+        size: 0.7 + Math.random() * 2.2,
+        speed: 0.006 + Math.random() * 0.028,
+        phase: Math.random() * Math.PI * 2
+      }));
+
+      let dpr = 1;
+      let viewWidth = 0;
+      let viewHeight = 0;
+      let board = { x: 0, y: 0, w: 0, h: 0, cell: 24 };
+      let lastMove = 0;
+      let levelToken = 0;
+      let launchToken = 0;
+      let launchTimer = 0;
+      let toastTimer = 0;
+      let pointerStart = null;
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function sameCell(a, b) {
+        return Boolean(a && b && a.x === b.x && a.y === b.y);
+      }
+
+      function inBounds(cell) {
+        return cell.x >= 0 && cell.x < COLS && cell.y >= 0 && cell.y < ROWS;
+      }
+
+      function wrapCell(cell) {
+        return {
+          x: (cell.x + COLS) % COLS,
+          y: (cell.y + ROWS) % ROWS
+        };
+      }
+
+      function missionTarget() {
+        return Math.min(10, 5 + Math.floor((state.level - 1) * 0.8));
+      }
+
+      function moveInterval() {
+        const base = Math.max(110, 380 - (state.level - 1) * 22);
+        return state.warpTicks > 0 ? base * 0.72 : base;
+      }
+
+      function initialShip() {
+        const y = Math.floor(ROWS / 2);
+        return [
+          { x: 6, y },
+          { x: 5, y },
+          { x: 4, y }
+        ];
+      }
+
+      function resetGame(startRunning = false) {
+        levelToken += 1;
+        clearLaunchTimer();
+        state.status = startRunning ? "running" : "ready";
+        state.score = 0;
+        state.level = 1;
+        state.missionCollected = 0;
+        state.totalCollected = 0;
+        state.shields = 1;
+        state.warpTicks = 0;
+        state.direction = DIRECTIONS.right;
+        state.nextDirection = DIRECTIONS.right;
+        state.ship = initialShip();
+        state.powerUp = null;
+        state.obstacles = [];
+        state.particles = [];
+        state.flash = 0;
+        generateObstacles();
+        state.planet = createPlanet();
+        lastMove = performance.now();
+        updateHud();
+        updateOverlay();
+      }
+
+      function startGame() {
+        if (state.status === "ready" || state.status === "gameover") {
+          resetGame(false);
+          beginLaunchDelay("1 秒后出发");
+          return;
+        }
+
+        if (state.status === "paused") {
+          beginLaunchDelay("1 秒后继续");
+        }
+      }
+
+      function togglePause() {
+        if (state.status === "running" || state.status === "launching") {
+          clearLaunchTimer();
+          state.status = "paused";
+          updateOverlay();
+          updateHud();
+          return;
+        }
+
+        if (state.status === "paused") {
+          beginLaunchDelay("1 秒后继续");
+        }
+      }
+
+      function toggleWallMode() {
+        state.wallMode = !state.wallMode;
+        updateHud();
+        showToast(state.wallMode ? "穿墙模式已开启" : "穿墙模式已关闭");
+      }
+
+      function openRules() {
+        if (state.status === "running" || state.status === "launching") {
+          togglePause();
+        }
+
+        ui.rulesPanel.hidden = false;
+      }
+
+      function closeRules() {
+        ui.rulesPanel.hidden = true;
+      }
+
+      function clearLaunchTimer() {
+        window.clearTimeout(launchTimer);
+        launchToken += 1;
+      }
+
+      function beginLaunchDelay(message) {
+        clearLaunchTimer();
+        state.status = "launching";
+        updateOverlay();
+        updateHud();
+        showToast(message);
+        const token = launchToken;
+
+        launchTimer = window.setTimeout(() => {
+          if (state.status === "launching" && token === launchToken) {
+            state.status = "running";
+            lastMove = performance.now();
+            updateOverlay();
+            updateHud();
+          }
+        }, START_DELAY_MS);
+      }
+
+      function queueDirection(next) {
+        if (!next) {
+          return;
+        }
+
+        if (state.status === "ready") {
+          startGame();
+        }
+
+        if (state.status !== "running" && state.status !== "launching") {
+          return;
+        }
+
+        const current = state.direction;
+        const isReverse = current.x + next.x === 0 && current.y + next.y === 0;
+        if (!isReverse) {
+          state.nextDirection = next;
+        }
+      }
+
+      function cellOccupied(cell, options = {}) {
+        if (!options.ignoreShip && state.ship.some((segment) => sameCell(segment, cell))) {
+          return true;
+        }
+
+        if (!options.ignoreObstacles && state.obstacles.some((rock) => sameCell(rock, cell))) {
+          return true;
+        }
+
+        if (!options.ignorePlanet && sameCell(state.planet, cell)) {
+          return true;
+        }
+
+        if (!options.ignorePowerUp && sameCell(state.powerUp, cell)) {
+          return true;
+        }
+
+        return false;
+      }
+
+      function randomEmptyCell(options = {}) {
+        for (let i = 0; i < 800; i += 1) {
+          const cell = {
+            x: Math.floor(Math.random() * COLS),
+            y: Math.floor(Math.random() * ROWS)
+          };
+
+          if (cellOccupied(cell, options)) {
+            continue;
+          }
+
+          if (options.safeFromHead) {
+            const head = state.ship[0];
+            const distance = Math.abs(cell.x - head.x) + Math.abs(cell.y - head.y);
+            if (distance < options.safeFromHead) {
+              continue;
+            }
+          }
+
+          return cell;
+        }
+
+        return { x: COLS - 4, y: Math.floor(ROWS / 2) };
+      }
+
+      function createPlanet() {
+        const cell = randomEmptyCell({ ignorePlanet: true, safeFromHead: 4 });
+        return {
+          ...cell,
+          hue: Math.floor(165 + Math.random() * 190),
+          ring: Math.random() > 0.45,
+          seed: Math.random() * 1000
+        };
+      }
+
+      function generateObstacles() {
+        state.obstacles = [];
+        const count = Math.min(9, Math.max(0, state.level - 1 + Math.floor(state.level / 3)));
+
+        for (let i = 0; i < count; i += 1) {
+          const cell = randomEmptyCell({
+            ignoreObstacles: false,
+            ignorePlanet: true,
+            ignorePowerUp: true,
+            safeFromHead: 5
+          });
+          state.obstacles.push({
+            ...cell,
+            seed: Math.random() * 1000,
+            tint: Math.random() > 0.5 ? "#8b9bb4" : "#776b91"
+          });
+        }
+      }
+
+      function maybeSpawnPowerUp() {
+        if (state.powerUp || state.totalCollected === 0) {
+          return;
+        }
+
+        const shouldSpawn = state.totalCollected % 4 === 0 || Math.random() < 0.18;
+        if (!shouldSpawn) {
+          return;
+        }
+
+        const type = state.totalCollected % 8 === 0 ? "warp" : "shield";
+        state.powerUp = {
+          ...randomEmptyCell({ safeFromHead: 3 }),
+          type,
+          ttl: 70
+        };
+      }
+
+      function collectPowerUp() {
+        if (!state.powerUp) {
+          return;
+        }
+
+        const type = state.powerUp.type;
+        if (type === "shield") {
+          state.shields = Math.min(SHIELD_MAX, state.shields + 1);
+          state.score += 40;
+          showToast("获得能量护盾");
+        } else {
+          state.warpTicks = 18;
+          state.score += 60;
+          showToast("曲速推进已启动");
+        }
+
+        burstAtCell(state.powerUp, type === "shield" ? ["#61f2d5", "#8fc7ff"] : ["#ffd166", "#ff7ab6"], 18);
+        state.powerUp = null;
+      }
+
+      function moveShip() {
+        state.direction = state.nextDirection;
+        const head = state.ship[0];
+        const rawNext = {
+          x: head.x + state.direction.x,
+          y: head.y + state.direction.y
+        };
+        const next = state.wallMode ? wrapCell(rawNext) : rawNext;
+        const willGrow = sameCell(next, state.planet);
+        const tailAllowance = willGrow ? 0 : 1;
+        const hitWall = !state.wallMode && !inBounds(next);
+        const hitSelf = state.ship.some((segment, index) => index < state.ship.length - tailAllowance && sameCell(segment, next));
+        const hitObstacle = state.obstacles.some((rock) => sameCell(rock, next));
+
+        if (hitWall || hitSelf || hitObstacle) {
+          resolveCrash(next);
+          return;
+        }
+
+        state.ship.unshift(next);
+
+        if (willGrow) {
+          const bonus = state.warpTicks > 0 ? 1.5 : 1;
+          state.score += Math.round((100 + state.level * 20) * bonus);
+          state.missionCollected += 1;
+          state.totalCollected += 1;
+          burstAtCell(next, ["#ffd166", "#61f2d5", "#ffffff"], 24);
+          state.planet = createPlanet();
+          maybeSpawnPowerUp();
+        } else {
+          state.ship.pop();
+        }
+
+        if (state.powerUp && sameCell(next, state.powerUp)) {
+          collectPowerUp();
+        }
+
+        if (state.warpTicks > 0) {
+          state.warpTicks -= 1;
+        }
+
+        if (state.powerUp) {
+          state.powerUp.ttl -= 1;
+          if (state.powerUp.ttl <= 0) {
+            state.powerUp = null;
+          }
+        }
+
+        if (state.missionCollected >= missionTarget()) {
+          advanceLevel();
+        }
+
+        updateHud();
+      }
+
+      function resolveCrash(cell) {
+        burstAtCell(inBounds(cell) ? cell : state.ship[0], ["#ff6b7a", "#ffd166", "#ffffff"], 32);
+
+        if (state.shields > 0) {
+          state.shields -= 1;
+          emergencyWarp();
+          updateHud();
+          beginLaunchDelay("消耗 1 层护盾，1 秒后重新出发");
+          return;
+        }
+
+        state.status = "gameover";
+        updateOverlay();
+        updateHud();
+      }
+
+      function emergencyWarp() {
+        const length = state.ship.length;
+        const safePlacement = findSafeShip(length);
+        state.ship = safePlacement.ship;
+        state.direction = safePlacement.direction;
+        state.nextDirection = safePlacement.direction;
+        state.flash = 18;
+      }
+
+      function findSafeShip(length) {
+        const candidates = [
+          DIRECTIONS.right,
+          DIRECTIONS.left,
+          DIRECTIONS.down,
+          DIRECTIONS.up
+        ];
+
+        for (let y = 2; y < ROWS - 2; y += 1) {
+          for (let x = 3; x < COLS - 3; x += 1) {
+            for (const direction of candidates) {
+              const ship = [];
+              let valid = true;
+
+              for (let i = 0; i < length; i += 1) {
+                const cell = { x: x - direction.x * i, y: y - direction.y * i };
+                if (!inBounds(cell) || state.obstacles.some((rock) => sameCell(rock, cell))) {
+                  valid = false;
+                  break;
+                }
+                ship.push(cell);
+              }
+
+              if (valid) {
+                return { ship, direction };
+              }
+            }
+          }
+        }
+
+        return { ship: initialShip(), direction: DIRECTIONS.right };
+      }
+
+      function advanceLevel() {
+        state.level += 1;
+        state.missionCollected = 0;
+        state.shields = Math.min(SHIELD_MAX, state.shields + 1);
+        state.warpTicks = 0;
+        generateObstacles();
+        state.planet = createPlanet();
+        state.powerUp = null;
+        state.status = "levelup";
+        levelToken += 1;
+        const token = levelToken;
+        burstAtCell(state.ship[0], ["#61f2d5", "#8fc7ff", "#ffd166"], 42);
+        updateHud();
+        updateOverlay();
+
+        window.setTimeout(() => {
+          if (state.status === "levelup" && token === levelToken) {
+            beginLaunchDelay("1 秒后进入新星域");
+          }
+        }, 1200);
+      }
+
+      function statusLabel() {
+        if (state.status === "running") {
+          return state.warpTicks > 0 ? "曲速推进" : "任务进行中";
+        }
+
+        if (state.status === "launching") {
+          return "准备出发";
+        }
+
+        if (state.status === "paused") {
+          return "任务暂停";
+        }
+
+        if (state.status === "levelup") {
+          return "星域升级";
+        }
+
+        if (state.status === "gameover") {
+          return "飞船返航";
+        }
+
+        return "任务待命";
+      }
+
+      function updateHud() {
+        const target = missionTarget();
+        ui.score.textContent = String(state.score);
+        ui.level.textContent = String(state.level);
+        ui.mission.textContent = `${state.missionCollected}/${target}`;
+        ui.missionBar.style.width = `${clamp((state.missionCollected / target) * 100, 0, 100)}%`;
+        ui.power.textContent = state.warpTicks > 0 ? `曲速中 ${state.shields}/${SHIELD_MAX}` : `护盾 ${state.shields}/${SHIELD_MAX}`;
+        ui.status.textContent = statusLabel();
+        ui.wallButton.textContent = state.wallMode ? "穿墙开" : "穿墙关";
+        ui.wallButton.setAttribute("aria-pressed", String(state.wallMode));
+        ui.pauseButton.textContent = state.status === "paused" ? "继续" : "暂停";
+        ui.startButton.textContent = state.status === "gameover" ? "再来" : "开始";
+      }
+
+      function updateOverlay() {
+        if (state.status === "running" || state.status === "launching") {
+          ui.overlay.hidden = true;
+          return;
+        }
+
+        ui.overlay.hidden = false;
+
+        if (state.status === "paused") {
+          ui.overlayTitle.textContent = "任务暂停";
+          ui.overlayText.textContent = `当前分数 ${state.score}，飞船保持在第 ${state.level} 级星域。`;
+          ui.overlayButton.textContent = "继续任务";
+          return;
+        }
+
+        if (state.status === "levelup") {
+          ui.overlayTitle.textContent = `进入第 ${state.level} 级星域`;
+          ui.overlayText.textContent = "护盾补给完成，小行星带正在靠近。";
+          ui.overlayButton.textContent = "准备好了";
+          return;
+        }
+
+        if (state.status === "gameover") {
+          ui.overlayTitle.textContent = "飞船返航";
+          ui.overlayText.textContent = `本次得分 ${state.score}，共收集 ${state.totalCollected} 颗星球。`;
+          ui.overlayButton.textContent = "再来一次";
+          return;
+        }
+
+        ui.overlayTitle.textContent = "太空任务待命";
+        ui.overlayText.textContent = `收集 ${missionTarget()} 颗星球，飞船就能进入下一片星域。`;
+        ui.overlayButton.textContent = "开始任务";
+      }
+
+      function showToast(message) {
+        window.clearTimeout(toastTimer);
+        ui.toast.textContent = message;
+        ui.toast.classList.add("show");
+        toastTimer = window.setTimeout(() => ui.toast.classList.remove("show"), 1300);
+      }
+
+      function setAppHeight() {
+        document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);
+      }
+
+      function handleViewportChange() {
+        setAppHeight();
+        window.requestAnimationFrame(resizeCanvas);
+      }
+
+      function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        dpr = Math.min(2, window.devicePixelRatio || 1);
+        viewWidth = Math.max(1, rect.width);
+        viewHeight = Math.max(1, rect.height);
+        canvas.width = Math.floor(viewWidth * dpr);
+        canvas.height = Math.floor(viewHeight * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const margin = clamp(Math.min(viewWidth, viewHeight) * 0.04, 10, 28);
+        const cell = Math.max(8, Math.floor(Math.min((viewWidth - margin * 2) / COLS, (viewHeight - margin * 2) / ROWS)));
+        board = {
+          cell,
+          w: cell * COLS,
+          h: cell * ROWS,
+          x: Math.round((viewWidth - cell * COLS) / 2),
+          y: Math.round((viewHeight - cell * ROWS) / 2)
+        };
+      }
+
+      function cellCenter(cell) {
+        return {
+          x: board.x + cell.x * board.cell + board.cell / 2,
+          y: board.y + cell.y * board.cell + board.cell / 2
+        };
+      }
+
+      function burstAtCell(cell, colors, amount) {
+        const center = cellCenter(cell);
+        for (let i = 0; i < amount; i += 1) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 0.8 + Math.random() * 3.2;
+          state.particles.push({
+            x: center.x,
+            y: center.y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 24 + Math.random() * 18,
+            maxLife: 42,
+            size: 2 + Math.random() * 3,
+            color: colors[Math.floor(Math.random() * colors.length)]
+          });
+        }
+      }
+
+      function updateParticles() {
+        state.particles = state.particles.filter((particle) => {
+          particle.x += particle.vx;
+          particle.y += particle.vy;
+          particle.vx *= 0.96;
+          particle.vy *= 0.96;
+          particle.life -= 1;
+          return particle.life > 0;
+        });
+
+        if (state.flash > 0) {
+          state.flash -= 1;
+        }
+      }
+
+      function draw(time) {
+        drawBackdrop(time);
+        drawBoard();
+        drawObstacles(time);
+        drawPlanet(time);
+        drawPowerUp(time);
+        drawShip(time);
+        drawParticles();
+      }
+
+      function drawBackdrop(time) {
+        const gradient = ctx.createLinearGradient(0, 0, viewWidth, viewHeight);
+        gradient.addColorStop(0, "#050818");
+        gradient.addColorStop(0.55, "#0b1230");
+        gradient.addColorStop(1, "#141d45");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, viewWidth, viewHeight);
+
+        drawNebula(viewWidth * 0.2, viewHeight * 0.25, Math.min(viewWidth, viewHeight) * 0.52, "rgba(95, 141, 255, 0.2)");
+        drawNebula(viewWidth * 0.82, viewHeight * 0.18, Math.min(viewWidth, viewHeight) * 0.42, "rgba(97, 242, 213, 0.16)");
+        drawNebula(viewWidth * 0.72, viewHeight * 0.84, Math.min(viewWidth, viewHeight) * 0.36, "rgba(255, 122, 182, 0.12)");
+
+        ctx.save();
+        for (const star of stars) {
+          const x = (star.x * viewWidth + time * star.speed) % viewWidth;
+          const y = star.y * viewHeight;
+          const twinkle = 0.45 + Math.sin(time * 0.003 + star.phase) * 0.35;
+          ctx.globalAlpha = clamp(twinkle, 0.18, 0.9);
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath();
+          ctx.arc(x, y, star.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      function drawNebula(x, y, radius, color) {
+        const nebula = ctx.createRadialGradient(x, y, 0, x, y, radius);
+        nebula.addColorStop(0, color);
+        nebula.addColorStop(1, "rgba(0, 0, 0, 0)");
+        ctx.fillStyle = nebula;
+        ctx.fillRect(0, 0, viewWidth, viewHeight);
+      }
+
+      function drawBoard() {
+        ctx.save();
+        ctx.strokeStyle = "rgba(143, 199, 255, 0.36)";
+        ctx.lineWidth = 2;
+        roundRect(board.x - 4, board.y - 4, board.w + 8, board.h + 8, 10);
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(2, 8, 24, 0.22)";
+        roundRect(board.x, board.y, board.w, board.h, 6);
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(143, 199, 255, 0.08)";
+        ctx.lineWidth = 1;
+        for (let x = 1; x < COLS; x += 1) {
+          const lineX = board.x + x * board.cell;
+          ctx.beginPath();
+          ctx.moveTo(lineX, board.y);
+          ctx.lineTo(lineX, board.y + board.h);
+          ctx.stroke();
+        }
+        for (let y = 1; y < ROWS; y += 1) {
+          const lineY = board.y + y * board.cell;
+          ctx.beginPath();
+          ctx.moveTo(board.x, lineY);
+          ctx.lineTo(board.x + board.w, lineY);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawPlanet(time) {
+        if (!state.planet) {
+          return;
+        }
+
+        const { x, y } = cellCenter(state.planet);
+        const radius = board.cell * (0.33 + Math.sin(time * 0.004 + state.planet.seed) * 0.025);
+
+        ctx.save();
+        if (state.planet.ring) {
+          ctx.translate(x, y);
+          ctx.rotate(-0.45);
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.58)";
+          ctx.lineWidth = Math.max(2, board.cell * 0.08);
+          ctx.beginPath();
+          ctx.ellipse(0, 0, radius * 1.55, radius * 0.48, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        const planet = ctx.createRadialGradient(x - radius * 0.35, y - radius * 0.38, radius * 0.1, x, y, radius);
+        planet.addColorStop(0, "#ffffff");
+        planet.addColorStop(0.25, `hsl(${state.planet.hue}, 95%, 76%)`);
+        planet.addColorStop(1, `hsl(${state.planet.hue}, 70%, 42%)`);
+        ctx.fillStyle = planet;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = "rgba(255, 255, 255, 0.65)";
+        ctx.beginPath();
+        ctx.arc(x - radius * 0.3, y - radius * 0.28, radius * 0.16, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function drawPowerUp(time) {
+        if (!state.powerUp) {
+          return;
+        }
+
+        const center = cellCenter(state.powerUp);
+        const pulse = 0.88 + Math.sin(time * 0.008) * 0.12;
+        const size = board.cell * 0.34 * pulse;
+
+        ctx.save();
+        ctx.translate(center.x, center.y);
+        ctx.shadowColor = state.powerUp.type === "shield" ? "#61f2d5" : "#ffd166";
+        ctx.shadowBlur = 18;
+
+        if (state.powerUp.type === "shield") {
+          ctx.strokeStyle = "#61f2d5";
+          ctx.lineWidth = Math.max(2, board.cell * 0.07);
+          polygon(0, 0, size, 6, -Math.PI / 6);
+          ctx.stroke();
+          ctx.fillStyle = "rgba(97, 242, 213, 0.18)";
+          ctx.fill();
+        } else {
+          ctx.rotate(Math.PI / 4);
+          ctx.fillStyle = "#ffd166";
+          ctx.fillRect(-size * 0.55, -size * 0.55, size * 1.1, size * 1.1);
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(-size * 0.55, -size * 0.55, size * 1.1, size * 1.1);
+        }
+        ctx.restore();
+      }
+
+      function drawObstacles(time) {
+        for (const rock of state.obstacles) {
+          const center = cellCenter(rock);
+          const radius = board.cell * 0.34;
+          ctx.save();
+          ctx.translate(center.x, center.y);
+          ctx.rotate(Math.sin(time * 0.001 + rock.seed) * 0.35);
+          ctx.fillStyle = rock.tint;
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.28)";
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          for (let i = 0; i < 9; i += 1) {
+            const angle = (i / 9) * Math.PI * 2;
+            const wobble = 0.72 + Math.sin(rock.seed + i * 1.9) * 0.18;
+            const x = Math.cos(angle) * radius * wobble;
+            const y = Math.sin(angle) * radius * wobble;
+            if (i === 0) {
+              ctx.moveTo(x, y);
+            } else {
+              ctx.lineTo(x, y);
+            }
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      function drawShip(time) {
+        if (!state.ship.length) {
+          return;
+        }
+
+        ctx.save();
+        if (state.flash > 0) {
+          ctx.globalAlpha = 0.55 + Math.sin(time * 0.04) * 0.25;
+        }
+
+        for (let i = state.ship.length - 1; i >= 1; i -= 1) {
+          const segment = state.ship[i];
+          const towardHead = directionBetween(segment, state.ship[i - 1]);
+          drawShipModule(segment, towardHead, i);
+        }
+
+        drawShipHead(state.ship[0], state.direction, time);
+        ctx.restore();
+      }
+
+      function directionBetween(from, to) {
+        return {
+          x: Math.sign(to.x - from.x),
+          y: Math.sign(to.y - from.y)
+        };
+      }
+
+      function angleFromDirection(direction) {
+        if (direction.x > 0) return 0;
+        if (direction.x < 0) return Math.PI;
+        if (direction.y > 0) return Math.PI / 2;
+        return -Math.PI / 2;
+      }
+
+      function drawShipModule(cell, direction, index) {
+        const center = cellCenter(cell);
+        const size = board.cell * 0.72;
+        ctx.save();
+        ctx.translate(center.x, center.y);
+        ctx.rotate(angleFromDirection(direction));
+        ctx.shadowColor = "rgba(97, 242, 213, 0.5)";
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = index % 2 === 0 ? "#8fc7ff" : "#61f2d5";
+        roundRect(-size * 0.42, -size * 0.24, size * 0.84, size * 0.48, size * 0.18);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "rgba(6, 18, 42, 0.72)";
+        roundRect(-size * 0.08, -size * 0.14, size * 0.26, size * 0.28, size * 0.08);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawShipHead(cell, direction, time) {
+        const center = cellCenter(cell);
+        const size = board.cell * 0.88;
+        const flamePulse = 0.85 + Math.sin(time * 0.022) * 0.15;
+
+        ctx.save();
+        ctx.translate(center.x, center.y);
+        ctx.rotate(angleFromDirection(direction));
+
+        if (state.status === "running") {
+          const flame = ctx.createLinearGradient(-size * 0.7, 0, -size * 0.28, 0);
+          flame.addColorStop(0, "rgba(255, 107, 122, 0)");
+          flame.addColorStop(0.36, "#ff6b7a");
+          flame.addColorStop(1, "#ffd166");
+          ctx.fillStyle = flame;
+          ctx.beginPath();
+          ctx.moveTo(-size * 0.68 * flamePulse, 0);
+          ctx.lineTo(-size * 0.26, -size * 0.15);
+          ctx.lineTo(-size * 0.26, size * 0.15);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        ctx.fillStyle = "#eaf8ff";
+        roundRect(-size * 0.34, -size * 0.23, size * 0.62, size * 0.46, size * 0.17);
+        ctx.fill();
+
+        ctx.fillStyle = "#61f2d5";
+        ctx.beginPath();
+        ctx.moveTo(size * 0.48, 0);
+        ctx.lineTo(size * 0.18, -size * 0.27);
+        ctx.lineTo(size * 0.18, size * 0.27);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "#ffd166";
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.12, -size * 0.22);
+        ctx.lineTo(-size * 0.42, -size * 0.42);
+        ctx.lineTo(-size * 0.26, -size * 0.13);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.12, size * 0.22);
+        ctx.lineTo(-size * 0.42, size * 0.42);
+        ctx.lineTo(-size * 0.26, size * 0.13);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "#071026";
+        ctx.beginPath();
+        ctx.arc(size * 0.04, 0, size * 0.13, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#8fc7ff";
+        ctx.beginPath();
+        ctx.arc(size * 0.07, -size * 0.03, size * 0.06, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function drawParticles() {
+        ctx.save();
+        for (const particle of state.particles) {
+          const alpha = clamp(particle.life / particle.maxLife, 0, 1);
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = particle.color;
+          ctx.beginPath();
+          ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      function roundRect(x, y, width, height, radius) {
+        const r = Math.min(radius, width / 2, height / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + width, y, x + width, y + height, r);
+        ctx.arcTo(x + width, y + height, x, y + height, r);
+        ctx.arcTo(x, y + height, x, y, r);
+        ctx.arcTo(x, y, x + width, y, r);
+        ctx.closePath();
+      }
+
+      function polygon(x, y, radius, sides, rotation = 0) {
+        ctx.beginPath();
+        for (let i = 0; i < sides; i += 1) {
+          const angle = rotation + (i / sides) * Math.PI * 2;
+          const px = x + Math.cos(angle) * radius;
+          const py = y + Math.sin(angle) * radius;
+          if (i === 0) {
+            ctx.moveTo(px, py);
+          } else {
+            ctx.lineTo(px, py);
+          }
+        }
+        ctx.closePath();
+      }
+
+      function frame(time) {
+        if (state.status === "running" && time - lastMove >= moveInterval()) {
+          moveShip();
+          lastMove = time;
+        }
+
+        updateParticles();
+        draw(time);
+        window.requestAnimationFrame(frame);
+      }
+
+      function directionFromKey(key) {
+        const value = key.toLowerCase();
+        if (value === "arrowup" || value === "w") return DIRECTIONS.up;
+        if (value === "arrowdown" || value === "s") return DIRECTIONS.down;
+        if (value === "arrowleft" || value === "a") return DIRECTIONS.left;
+        if (value === "arrowright" || value === "d") return DIRECTIONS.right;
+        return null;
+      }
+
+      window.addEventListener("keydown", (event) => {
+        if (!ui.rulesPanel.hidden) {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            closeRules();
+          }
+          return;
+        }
+
+        const direction = directionFromKey(event.key);
+        if (direction) {
+          event.preventDefault();
+          queueDirection(direction);
+          return;
+        }
+
+        if (event.key === " " || event.key === "Enter") {
+          event.preventDefault();
+          if (state.status === "ready" || state.status === "gameover") {
+            startGame();
+          } else {
+            togglePause();
+          }
+        }
+
+        if (event.key.toLowerCase() === "r") {
+          event.preventDefault();
+          resetGame(false);
+          beginLaunchDelay("1 秒后重新出发");
+        }
+
+        if (event.key.toLowerCase() === "t") {
+          event.preventDefault();
+          toggleWallMode();
+        }
+      });
+
+      document.querySelectorAll("[data-dir]").forEach((button) => {
+        button.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+          queueDirection(DIRECTIONS[button.dataset.dir]);
+        });
+      });
+
+      canvas.addEventListener("pointerdown", (event) => {
+        pointerStart = { x: event.clientX, y: event.clientY };
+        canvas.setPointerCapture(event.pointerId);
+      });
+
+      canvas.addEventListener("pointerup", (event) => {
+        if (!pointerStart) {
+          return;
+        }
+
+        const dx = event.clientX - pointerStart.x;
+        const dy = event.clientY - pointerStart.y;
+        pointerStart = null;
+
+        if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) {
+          return;
+        }
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+          queueDirection(dx > 0 ? DIRECTIONS.right : DIRECTIONS.left);
+        } else {
+          queueDirection(dy > 0 ? DIRECTIONS.down : DIRECTIONS.up);
+        }
+      });
+
+      ui.startButton.addEventListener("click", startGame);
+      ui.overlayButton.addEventListener("click", () => {
+        if (state.status === "paused") {
+          togglePause();
+        } else if (state.status !== "levelup") {
+          startGame();
+        }
+      });
+      ui.pauseButton.addEventListener("click", togglePause);
+      ui.rulesButton.addEventListener("click", openRules);
+      ui.closeRulesButton.addEventListener("click", closeRules);
+      ui.rulesPanel.addEventListener("click", (event) => {
+        if (event.target === ui.rulesPanel) {
+          closeRules();
+        }
+      });
+      ui.wallButton.addEventListener("click", toggleWallMode);
+      ui.restartButton.addEventListener("click", () => {
+        resetGame(false);
+        beginLaunchDelay("1 秒后重新出发");
+      });
+
+      document.addEventListener("touchmove", (event) => {
+        event.preventDefault();
+      }, { passive: false });
+      document.addEventListener("gesturestart", (event) => {
+        event.preventDefault();
+      });
+      window.addEventListener("resize", handleViewportChange);
+      window.addEventListener("orientationchange", handleViewportChange);
+      window.addEventListener("pageshow", handleViewportChange);
+      setAppHeight();
+      resizeCanvas();
+      resetGame(false);
+      window.requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>
