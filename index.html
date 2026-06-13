@@ -650,6 +650,7 @@
       const ROWS = 26;
       const SHIELD_MAX = 5;
       const START_DELAY_MS = 1000;
+      // Grid directions are shared by keyboard, touch buttons, and swipe input.
       const DIRECTIONS = {
         up: { x: 0, y: -1 },
         down: { x: 0, y: 1 },
@@ -657,6 +658,7 @@
         right: { x: 1, y: 0 }
       };
 
+      // Single source of truth for gameplay, rendering effects, and UI state.
       const state = {
         status: "ready",
         score: 0,
@@ -676,6 +678,7 @@
         flash: 0
       };
 
+      // Decorative background stars are deterministic enough to reuse every frame.
       const stars = Array.from({ length: 140 }, () => ({
         x: Math.random(),
         y: Math.random(),
@@ -689,6 +692,7 @@
       let viewHeight = 0;
       let board = { x: 0, y: 0, w: 0, h: 0, cell: 24 };
       let lastMove = 0;
+      // Tokens invalidate delayed resumes after reset, pause, or level changes.
       let levelToken = 0;
       let launchToken = 0;
       let launchTimer = 0;
@@ -708,6 +712,7 @@
       }
 
       function wrapCell(cell) {
+        // Used only when wall mode is enabled.
         return {
           x: (cell.x + COLS) % COLS,
           y: (cell.y + ROWS) % ROWS
@@ -719,6 +724,7 @@
       }
 
       function moveInterval() {
+        // Level 1 starts slowly; each level trims the interval until the floor.
         const base = Math.max(110, 380 - (state.level - 1) * 22);
         return state.warpTicks > 0 ? base * 0.72 : base;
       }
@@ -806,6 +812,7 @@
       }
 
       function beginLaunchDelay(message) {
+        // Hide the modal immediately, then wait before the ship actually moves.
         clearLaunchTimer();
         state.status = "launching";
         updateOverlay();
@@ -864,6 +871,7 @@
       }
 
       function randomEmptyCell(options = {}) {
+        // Retry random placement to avoid spawning planets or powerups on hazards.
         for (let i = 0; i < 800; i += 1) {
           const cell = {
             x: Math.floor(Math.random() * COLS),
@@ -956,6 +964,7 @@
       }
 
       function moveShip() {
+        // Apply queued direction once per tick so reversals are predictable.
         state.direction = state.nextDirection;
         const head = state.ship[0];
         const rawNext = {
@@ -964,6 +973,7 @@
         };
         const next = state.wallMode ? wrapCell(rawNext) : rawNext;
         const willGrow = sameCell(next, state.planet);
+        // Moving into the current tail cell is safe only when the ship does not grow.
         const tailAllowance = willGrow ? 0 : 1;
         const hitWall = !state.wallMode && !inBounds(next);
         const hitSelf = state.ship.some((segment, index) => index < state.ship.length - tailAllowance && sameCell(segment, next));
@@ -1014,6 +1024,7 @@
         burstAtCell(inBounds(cell) ? cell : state.ship[0], ["#ff6b7a", "#ffd166", "#ffffff"], 32);
 
         if (state.shields > 0) {
+          // Shields prevent game over, relocate the ship, and resume after a delay.
           state.shields -= 1;
           emergencyWarp();
           updateHud();
@@ -1027,6 +1038,7 @@
       }
 
       function emergencyWarp() {
+        // Place the whole ship in a safe line so the next tick cannot self-collide.
         const length = state.ship.length;
         const safePlacement = findSafeShip(length);
         state.ship = safePlacement.ship;
@@ -1069,6 +1081,7 @@
       }
 
       function advanceLevel() {
+        // Level transitions briefly show feedback, then reuse the launch delay.
         state.level += 1;
         state.missionCollected = 0;
         state.shields = Math.min(SHIELD_MAX, state.shields + 1);
@@ -1170,15 +1183,18 @@
       }
 
       function setAppHeight() {
+        // WeChat and mobile Safari often report a more reliable innerHeight than vh.
         document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);
       }
 
       function handleViewportChange() {
+        // Orientation and browser chrome changes can resize the playable canvas.
         setAppHeight();
         window.requestAnimationFrame(resizeCanvas);
       }
 
       function resizeCanvas() {
+        // Keep the board centered and fit all grid cells into the visible stage.
         const rect = canvas.getBoundingClientRect();
         dpr = Math.min(2, window.devicePixelRatio || 1);
         viewWidth = Math.max(1, rect.width);
@@ -1629,6 +1645,7 @@
       });
 
       canvas.addEventListener("pointerdown", (event) => {
+        // Capture the first touch point for swipe direction detection.
         pointerStart = { x: event.clientX, y: event.clientY };
         canvas.setPointerCapture(event.pointerId);
       });
@@ -1676,9 +1693,11 @@
       });
 
       document.addEventListener("touchmove", (event) => {
+        // Prevent page panning in mobile browsers and WeChat WebView.
         event.preventDefault();
       }, { passive: false });
       document.addEventListener("gesturestart", (event) => {
+        // Disable iOS pinch gestures so the board stays locked in place.
         event.preventDefault();
       });
       window.addEventListener("resize", handleViewportChange);
