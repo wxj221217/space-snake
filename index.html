@@ -425,16 +425,77 @@
       }
 
       .hud {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 6px;
+        padding: max(8px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 7px max(10px, env(safe-area-inset-left));
       }
 
       .brand {
-        grid-column: 1 / -1;
+        grid-column: 1 / 3;
+        order: 1;
+        min-height: 46px;
+        padding: 6px 8px;
+      }
+
+      .ship-badge {
+        flex-basis: 30px;
+        width: 30px;
+        height: 30px;
+      }
+
+      .ship-badge::before {
+        left: 6px;
+        top: 12px;
+        width: 18px;
+        height: 6px;
+      }
+
+      .brand-title strong {
+        font-size: 15px;
+      }
+
+      .brand-title span {
+        font-size: 10px;
+      }
+
+      .stat {
+        order: 3;
+        min-height: 42px;
+        padding: 5px 6px;
+      }
+
+      .stat span {
+        font-size: 9px;
+      }
+
+      .stat strong,
+      .mission strong {
+        margin-top: 2px;
+        font-size: 15px;
+      }
+
+      .mission {
+        gap: 3px;
+      }
+
+      .meter {
+        height: 4px;
       }
 
       .action-group {
-        grid-column: 1 / -1;
-        justify-content: center;
+        grid-column: 3 / -1;
+        order: 2;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 5px;
+        padding: 5px;
+      }
+
+      .action-group .command {
+        min-width: 0;
+        min-height: 36px;
+        padding: 0 6px;
+        font-size: 13px;
       }
 
       .controls {
@@ -501,12 +562,68 @@
 
     @media (max-width: 520px) {
       .hud {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 4px;
+        padding: max(6px, env(safe-area-inset-top)) 7px 5px;
+      }
+
+      .brand {
+        grid-column: 1 / -1;
+        min-height: 32px;
+        gap: 6px;
+        padding: 4px 7px;
+      }
+
+      .brand-title span {
+        display: none;
+      }
+
+      .ship-badge {
+        flex-basis: 24px;
+        width: 24px;
+        height: 24px;
+      }
+
+      .ship-badge::before {
+        left: 5px;
+        top: 10px;
+        width: 15px;
+        height: 5px;
+      }
+
+      .stat {
+        min-height: 32px;
+        padding: 3px 5px;
+      }
+
+      .stat span {
+        font-size: 8px;
       }
 
       .stat strong {
-        font-size: 18px;
+        margin-top: 1px;
+        font-size: 13px;
+      }
+
+      .mission strong {
+        font-size: 13px;
+      }
+
+      .meter {
+        height: 3px;
+      }
+
+      .action-group {
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 4px;
+        padding: 4px;
+      }
+
+      .action-group .command {
+        min-height: 30px;
+        padding: 0 3px;
+        font-size: 12px;
       }
 
       .command {
