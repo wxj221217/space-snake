@@ -71,7 +71,7 @@
     .hud {
       z-index: 4;
       display: grid;
-      grid-template-columns: minmax(156px, 1.35fr) repeat(4, minmax(94px, auto)) auto;
+      grid-template-columns: minmax(156px, 1.35fr) repeat(5, minmax(88px, auto)) auto;
       gap: 10px;
       align-items: stretch;
       padding: max(12px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 12px max(14px, env(safe-area-inset-left));
@@ -553,6 +553,11 @@
       </div>
 
       <div class="stat">
+        <span>最高分</span>
+        <strong id="bestScoreText">0</strong>
+      </div>
+
+      <div class="stat">
         <span>等级</span>
         <strong id="levelText">1</strong>
       </div>
@@ -572,6 +577,7 @@
         <button class="command primary" id="startButton" type="button">开始</button>
         <button class="command" id="pauseButton" type="button">暂停</button>
         <button class="command" id="rulesButton" type="button">规则</button>
+        <button class="command" id="soundButton" type="button" aria-pressed="true">音效开</button>
       </div>
     </header>
 
@@ -627,6 +633,7 @@
       const ctx = canvas.getContext("2d");
       const ui = {
         score: document.querySelector("#scoreText"),
+        bestScore: document.querySelector("#bestScoreText"),
         level: document.querySelector("#levelText"),
         mission: document.querySelector("#missionText"),
         missionBar: document.querySelector("#missionBar"),
@@ -640,6 +647,7 @@
         startButton: document.querySelector("#startButton"),
         pauseButton: document.querySelector("#pauseButton"),
         rulesButton: document.querySelector("#rulesButton"),
+        soundButton: document.querySelector("#soundButton"),
         closeRulesButton: document.querySelector("#closeRulesButton"),
         wallButton: document.querySelector("#wallButton"),
         restartButton: document.querySelector("#restartButton"),
@@ -650,6 +658,8 @@
       const ROWS = 26;
       const SHIELD_MAX = 5;
       const START_DELAY_MS = 1000;
+      const RECORD_KEY = "spaceSnake.records.v1";
+      const SOUND_KEY = "spaceSnake.sound.v1";
       // Grid directions are shared by keyboard, touch buttons, and swipe input.
       const DIRECTIONS = {
         up: { x: 0, y: -1 },
@@ -665,6 +675,9 @@
         level: 1,
         missionCollected: 0,
         totalCollected: 0,
+        newRecord: false,
+        records: { score: 0, level: 1, planets: 0 },
+        soundEnabled: true,
         shields: 1,
         wallMode: false,
         warpTicks: 0,
@@ -698,6 +711,7 @@
       let launchTimer = 0;
       let toastTimer = 0;
       let pointerStart = null;
+      let audioContext = null;
 
       function clamp(value, min, max) {
         return Math.max(min, Math.min(max, value));
@@ -738,6 +752,63 @@
         ];
       }
 
+      function safeReadStorage(key) {
+        try {
+          return window.localStorage.getItem(key);
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function safeWriteStorage(key, value) {
+        try {
+          window.localStorage.setItem(key, value);
+        } catch (error) {
+          // Storage can be blocked in private modes; gameplay should continue.
+        }
+      }
+
+      function loadPreferences() {
+        const savedRecords = safeReadStorage(RECORD_KEY);
+        const savedSound = safeReadStorage(SOUND_KEY);
+
+        if (savedRecords) {
+          try {
+            const parsed = JSON.parse(savedRecords);
+            state.records = {
+              score: Math.max(0, Number(parsed.score) || 0),
+              level: Math.max(1, Number(parsed.level) || 1),
+              planets: Math.max(0, Number(parsed.planets) || 0)
+            };
+          } catch (error) {
+            state.records = { score: 0, level: 1, planets: 0 };
+          }
+        }
+
+        state.soundEnabled = savedSound !== "off";
+      }
+
+      function saveRecords() {
+        safeWriteStorage(RECORD_KEY, JSON.stringify(state.records));
+      }
+
+      function saveSoundPreference() {
+        safeWriteStorage(SOUND_KEY, state.soundEnabled ? "on" : "off");
+      }
+
+      function updateRecords() {
+        const next = {
+          score: Math.max(state.records.score, state.score),
+          level: Math.max(state.records.level, state.level),
+          planets: Math.max(state.records.planets, state.totalCollected)
+        };
+        const isNewRecord = next.score > state.records.score;
+        state.records = next;
+        state.newRecord = isNewRecord;
+        saveRecords();
+        return isNewRecord;
+      }
+
       function resetGame(startRunning = false) {
         levelToken += 1;
         clearLaunchTimer();
@@ -746,6 +817,7 @@
         state.level = 1;
         state.missionCollected = 0;
         state.totalCollected = 0;
+        state.newRecord = false;
         state.shields = 1;
         state.warpTicks = 0;
         state.direction = DIRECTIONS.right;
@@ -765,11 +837,13 @@
       function startGame() {
         if (state.status === "ready" || state.status === "gameover") {
           resetGame(false);
+          playFeedback("start");
           beginLaunchDelay("1 秒后出发");
           return;
         }
 
         if (state.status === "paused") {
+          playFeedback("start");
           beginLaunchDelay("1 秒后继续");
         }
       }
@@ -794,6 +868,17 @@
         showToast(state.wallMode ? "穿墙模式已开启" : "穿墙模式已关闭");
       }
 
+      function toggleSound() {
+        state.soundEnabled = !state.soundEnabled;
+        saveSoundPreference();
+        updateHud();
+        showToast(state.soundEnabled ? "音效已开启" : "音效已关闭");
+
+        if (state.soundEnabled) {
+          playFeedback("click");
+        }
+      }
+
       function openRules() {
         if (state.status === "running" || state.status === "launching") {
           togglePause();
@@ -804,6 +889,87 @@
 
       function closeRules() {
         ui.rulesPanel.hidden = true;
+      }
+
+      function ensureAudioContext() {
+        if (!state.soundEnabled) {
+          return null;
+        }
+
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) {
+          return null;
+        }
+
+        if (!audioContext) {
+          audioContext = new AudioContextClass();
+        }
+
+        if (audioContext.state === "suspended") {
+          audioContext.resume();
+        }
+
+        return audioContext;
+      }
+
+      function tone(frequency, start, duration, type = "sine", volume = 0.045) {
+        const audio = ensureAudioContext();
+        if (!audio) {
+          return;
+        }
+
+        const oscillator = audio.createOscillator();
+        const gain = audio.createGain();
+        const startAt = audio.currentTime + start;
+        const endAt = startAt + duration;
+
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, startAt);
+        gain.gain.setValueAtTime(0.0001, startAt);
+        gain.gain.exponentialRampToValueAtTime(volume, startAt + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, endAt);
+        oscillator.connect(gain);
+        gain.connect(audio.destination);
+        oscillator.start(startAt);
+        oscillator.stop(endAt + 0.02);
+      }
+
+      function vibrate(pattern) {
+        if (!state.soundEnabled || !navigator.vibrate) {
+          return;
+        }
+
+        try {
+          navigator.vibrate(pattern);
+        } catch (error) {
+          // Vibration support varies across mobile browsers and WeChat.
+        }
+      }
+
+      function playFeedback(type) {
+        if (!state.soundEnabled) {
+          return;
+        }
+
+        const feedback = {
+          click: { tones: [[520, 0, 0.04, "triangle", 0.025]], vibration: 8 },
+          start: { tones: [[392, 0, 0.07], [523, 0.07, 0.08]], vibration: 18 },
+          collect: { tones: [[660, 0, 0.06], [880, 0.06, 0.08]], vibration: 18 },
+          power: { tones: [[440, 0, 0.06, "triangle"], [740, 0.05, 0.1, "triangle"]], vibration: [18, 18, 22] },
+          shield: { tones: [[180, 0, 0.1, "sawtooth", 0.035], [260, 0.1, 0.12, "triangle"]], vibration: [45, 25, 45] },
+          level: { tones: [[523, 0, 0.07], [659, 0.07, 0.07], [784, 0.14, 0.12]], vibration: [25, 25, 35] },
+          gameover: { tones: [[280, 0, 0.12, "sawtooth", 0.035], [180, 0.12, 0.16, "sawtooth", 0.03]], vibration: [80, 35, 80] },
+          record: { tones: [[784, 0, 0.08], [988, 0.08, 0.08], [1175, 0.16, 0.15]], vibration: [30, 25, 50] }
+        }[type];
+
+        if (!feedback) {
+          return;
+        }
+
+        feedback.tones.forEach(([frequency, start, duration, wave, volume]) => {
+          tone(frequency, start, duration, wave, volume);
+        });
+        vibrate(feedback.vibration);
       }
 
       function clearLaunchTimer() {
@@ -959,6 +1125,7 @@
           showToast("曲速推进已启动");
         }
 
+        playFeedback("power");
         burstAtCell(state.powerUp, type === "shield" ? ["#61f2d5", "#8fc7ff"] : ["#ffd166", "#ff7ab6"], 18);
         state.powerUp = null;
       }
@@ -991,6 +1158,7 @@
           state.score += Math.round((100 + state.level * 20) * bonus);
           state.missionCollected += 1;
           state.totalCollected += 1;
+          playFeedback("collect");
           burstAtCell(next, ["#ffd166", "#61f2d5", "#ffffff"], 24);
           state.planet = createPlanet();
           maybeSpawnPowerUp();
@@ -1028,13 +1196,19 @@
           state.shields -= 1;
           emergencyWarp();
           updateHud();
+          playFeedback("shield");
           beginLaunchDelay("消耗 1 层护盾，1 秒后重新出发");
           return;
         }
 
+        const isNewRecord = updateRecords();
         state.status = "gameover";
         updateOverlay();
         updateHud();
+        if (isNewRecord) {
+          showToast("新纪录！");
+        }
+        playFeedback(isNewRecord ? "record" : "gameover");
       }
 
       function emergencyWarp() {
@@ -1092,6 +1266,7 @@
         state.status = "levelup";
         levelToken += 1;
         const token = levelToken;
+        playFeedback("level");
         burstAtCell(state.ship[0], ["#61f2d5", "#8fc7ff", "#ffd166"], 42);
         updateHud();
         updateOverlay();
@@ -1130,6 +1305,7 @@
       function updateHud() {
         const target = missionTarget();
         ui.score.textContent = String(state.score);
+        ui.bestScore.textContent = String(state.records.score);
         ui.level.textContent = String(state.level);
         ui.mission.textContent = `${state.missionCollected}/${target}`;
         ui.missionBar.style.width = `${clamp((state.missionCollected / target) * 100, 0, 100)}%`;
@@ -1137,6 +1313,8 @@
         ui.status.textContent = statusLabel();
         ui.wallButton.textContent = state.wallMode ? "穿墙开" : "穿墙关";
         ui.wallButton.setAttribute("aria-pressed", String(state.wallMode));
+        ui.soundButton.textContent = state.soundEnabled ? "音效开" : "音效关";
+        ui.soundButton.setAttribute("aria-pressed", String(state.soundEnabled));
         ui.pauseButton.textContent = state.status === "paused" ? "继续" : "暂停";
         ui.startButton.textContent = state.status === "gameover" ? "再来" : "开始";
       }
@@ -1165,7 +1343,9 @@
 
         if (state.status === "gameover") {
           ui.overlayTitle.textContent = "飞船返航";
-          ui.overlayText.textContent = `本次得分 ${state.score}，共收集 ${state.totalCollected} 颗星球。`;
+          ui.overlayText.textContent = state.newRecord
+            ? `新纪录！本次得分 ${state.score}，最高等级 ${state.records.level}。`
+            : `本次得分 ${state.score}，最高分 ${state.records.score}。`;
           ui.overlayButton.textContent = "再来一次";
           return;
         }
@@ -1635,6 +1815,15 @@
           event.preventDefault();
           toggleWallMode();
         }
+
+        if (event.key.toLowerCase() === "m") {
+          event.preventDefault();
+          toggleSound();
+        }
+      });
+
+      document.querySelectorAll("button").forEach((button) => {
+        button.addEventListener("pointerdown", () => playFeedback("click"));
       });
 
       document.querySelectorAll("[data-dir]").forEach((button) => {
@@ -1680,6 +1869,7 @@
       });
       ui.pauseButton.addEventListener("click", togglePause);
       ui.rulesButton.addEventListener("click", openRules);
+      ui.soundButton.addEventListener("click", toggleSound);
       ui.closeRulesButton.addEventListener("click", closeRules);
       ui.rulesPanel.addEventListener("click", (event) => {
         if (event.target === ui.rulesPanel) {
@@ -1703,6 +1893,7 @@
       window.addEventListener("resize", handleViewportChange);
       window.addEventListener("orientationchange", handleViewportChange);
       window.addEventListener("pageshow", handleViewportChange);
+      loadPreferences();
       setAppHeight();
       resizeCanvas();
       resetGame(false);
