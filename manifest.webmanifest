@@ -1,0 +1,32 @@
+{
+  "name": "星际飞船贪吃蛇",
+  "short_name": "太空贪吃蛇",
+  "description": "适合手机和平板的太空飞船贪吃蛇小游戏，支持离线、触屏、任务、成就和本机排行榜。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#050818",
+  "theme_color": "#071026",
+  "categories": ["games", "education", "kids"],
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

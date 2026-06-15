@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">星际飞船贪吃蛇图标</title>
+  <desc id="desc">蓝绿色太空背景上的卡通飞船。</desc>
+  <defs>
+    <radialGradient id="bg" cx="34%" cy="24%" r="78%">
+      <stop offset="0" stop-color="#1f7fff"/>
+      <stop offset="0.48" stop-color="#071026"/>
+      <stop offset="1" stop-color="#050818"/>
+    </radialGradient>
+    <linearGradient id="ship" x1="88" x2="420" y1="256" y2="256" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8fc7ff"/>
+      <stop offset="0.48" stop-color="#f4fbff"/>
+      <stop offset="1" stop-color="#61f2d5"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <circle cx="104" cy="112" r="7" fill="#fff" opacity=".7"/>
+  <circle cx="412" cy="138" r="5" fill="#fff" opacity=".56"/>
+  <circle cx="378" cy="394" r="8" fill="#ffd166" opacity=".72"/>
+  <circle cx="152" cy="368" r="6" fill="#61f2d5" opacity=".78"/>
+  <path d="M90 256c54-52 116-78 186-78 56 0 102 20 146 58 10 9 10 31 0 40-44 38-90 58-146 58-70 0-132-26-186-78Z" fill="url(#ship)" stroke="#b8f7ff" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M153 202 86 144l25 90Zm0 108-67 58 25-90Z" fill="#ffd166" stroke="#ffe6a3" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M382 256 280 186v140Z" fill="#61f2d5" stroke="#b8f7ff" stroke-width="10" stroke-linejoin="round"/>
+  <circle cx="236" cy="256" r="44" fill="#071026"/>
+  <circle cx="248" cy="244" r="18" fill="#8fc7ff"/>
+  <path d="M76 256 32 230v52Z" fill="#ff6b7a"/>
+</svg>

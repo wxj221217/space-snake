@@ -8,6 +8,27 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="x5-fullscreen" content="true">
   <meta name="x5-page-mode" content="app">
+  <meta name="description" content="适合孩子在手机和平板上玩的太空飞船贪吃蛇小游戏，支持触屏、护盾、穿墙、任务和成就。">
+  <meta name="theme-color" content="#071026">
+  <meta name="apple-mobile-web-app-title" content="星际飞船贪吃蛇">
+  <meta property="og:title" content="星际飞船贪吃蛇">
+  <meta property="og:description" content="驾驶小飞船收集星球，完成任务，解锁成就。微信里打开就能玩。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://wxj221217.github.io/space-snake/">
+  <meta property="og:site_name" content="星际飞船贪吃蛇">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:image" content="https://dummyimage.com/1200x630/071026/61f2d5&text=Space+Snake">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="星际飞船贪吃蛇游戏封面">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="星际飞船贪吃蛇">
+  <meta name="twitter:description" content="驾驶小飞船收集星球，完成任务，解锁成就。">
+  <meta name="twitter:image" content="https://dummyimage.com/1200x630/071026/61f2d5&text=Space+Snake">
+  <link rel="canonical" href="https://wxj221217.github.io/space-snake/">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <title>星际飞船贪吃蛇</title>
   <style>
     :root {
@@ -71,7 +92,7 @@
     .hud {
       z-index: 4;
       display: grid;
-      grid-template-columns: minmax(156px, 1.35fr) repeat(5, minmax(88px, auto)) auto;
+      grid-template-columns: minmax(156px, 1.35fr) repeat(6, minmax(78px, auto)) auto;
       gap: 10px;
       align-items: stretch;
       padding: max(12px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 12px max(14px, env(safe-area-inset-left));
@@ -274,6 +295,13 @@
       line-height: 1.45;
     }
 
+    .overlay-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
     .rules-menu {
       position: absolute;
       inset: 0;
@@ -289,13 +317,69 @@
       display: none;
     }
 
+    .poster-menu {
+      position: absolute;
+      inset: 0;
+      z-index: 7;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(3, 8, 22, 0.66);
+      backdrop-filter: blur(8px);
+    }
+
+    .poster-menu[hidden] {
+      display: none;
+    }
+
+    .poster-card {
+      width: min(420px, 100%);
+      max-height: min(760px, calc(100% - 16px));
+      overflow-y: auto;
+      padding: 16px;
+      border: 1px solid rgba(143, 199, 255, 0.36);
+      border-radius: 8px;
+      background: var(--panel-strong);
+      box-shadow: 0 22px 52px rgba(0, 0, 0, 0.42);
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .poster-card h2 {
+      margin: 0 0 12px;
+      color: var(--text);
+      font-size: 22px;
+      line-height: 1.15;
+    }
+
+    .poster-preview {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid rgba(143, 199, 255, 0.26);
+      border-radius: 8px;
+      background: #071026;
+    }
+
+    .poster-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
     .rules-card {
       width: min(460px, 100%);
+      max-height: min(760px, calc(100% - 16px));
+      overflow-y: auto;
+      overscroll-behavior: contain;
       padding: 18px;
       border: 1px solid rgba(143, 199, 255, 0.36);
       border-radius: 8px;
       background: var(--panel-strong);
       box-shadow: 0 22px 52px rgba(0, 0, 0, 0.42);
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
     }
 
     .rules-head {
@@ -322,6 +406,348 @@
 
     .rules-list li + li {
       margin-top: 6px;
+    }
+
+    .rules-section-title {
+      margin: 14px 0 8px;
+      color: var(--gold);
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+
+    .achievement-list {
+      display: grid;
+      gap: 6px;
+      margin: 14px 0 0;
+    }
+
+    .achievement-item {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border: 1px solid rgba(143, 199, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(8, 15, 38, 0.58);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.2;
+    }
+
+    .achievement-info {
+      display: grid;
+      flex: 1 1 auto;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .achievement-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .achievement-progress {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .achievement-meter {
+      flex: 1 1 auto;
+      height: 5px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(169, 186, 216, 0.18);
+    }
+
+    .achievement-meter span {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--gold));
+    }
+
+    .achievement-item.unlocked {
+      border-color: rgba(255, 209, 102, 0.56);
+      color: var(--text);
+      background: rgba(255, 209, 102, 0.12);
+    }
+
+    .achievement-badge {
+      flex: 0 0 auto;
+      color: var(--gold);
+      font-weight: 900;
+    }
+
+    .recent-list {
+      display: grid;
+      gap: 6px;
+      margin: 0;
+    }
+
+    .recent-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px 10px;
+      align-items: center;
+      padding: 8px 10px;
+      border: 1px solid rgba(143, 199, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(8, 15, 38, 0.58);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .recent-item strong {
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1;
+    }
+
+    .recent-item span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .recent-item.empty {
+      grid-template-columns: 1fr;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .recent-item.active-player {
+      border-color: rgba(97, 242, 213, 0.52);
+      background: rgba(97, 242, 213, 0.1);
+    }
+
+    .profile-card,
+    .reward-list,
+    .chapter-map {
+      display: grid;
+      gap: 8px;
+    }
+
+    .profile-card {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      padding: 10px;
+      border: 1px solid rgba(97, 242, 213, 0.28);
+      border-radius: 8px;
+      background: rgba(97, 242, 213, 0.08);
+    }
+
+    .profile-stat {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .profile-stat span {
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.1;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .profile-stat strong {
+      overflow: hidden;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.1;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chapter-map {
+      position: relative;
+      margin: 0;
+    }
+
+    .chapter-card {
+      display: grid;
+      grid-template-columns: 30px 1fr auto;
+      gap: 9px;
+      align-items: center;
+      padding: 9px 10px;
+      border: 1px solid rgba(143, 199, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(8, 15, 38, 0.58);
+      color: var(--muted);
+    }
+
+    .chapter-card.current {
+      border-color: rgba(97, 242, 213, 0.58);
+      background: rgba(97, 242, 213, 0.1);
+      color: var(--text);
+    }
+
+    .chapter-card.completed {
+      border-color: rgba(255, 209, 102, 0.48);
+      background: rgba(255, 209, 102, 0.1);
+      color: var(--text);
+    }
+
+    .chapter-card.locked {
+      opacity: 0.72;
+    }
+
+    .chapter-orbit {
+      width: 30px;
+      height: 30px;
+      border: 2px solid currentColor;
+      border-radius: 50%;
+      box-shadow: 0 0 16px rgba(97, 242, 213, 0.22);
+    }
+
+    .chapter-info {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .chapter-info strong,
+    .chapter-info span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chapter-info strong {
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.1;
+    }
+
+    .chapter-info span {
+      font-size: 12px;
+      line-height: 1.15;
+    }
+
+    .chapter-badge,
+    .reward-badge {
+      padding: 4px 7px;
+      border-radius: 999px;
+      background: rgba(143, 199, 255, 0.14);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .reward-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px 10px;
+      align-items: center;
+      padding: 8px 10px;
+      border: 1px solid rgba(143, 199, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(8, 15, 38, 0.58);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .reward-item.unlocked {
+      border-color: rgba(255, 209, 102, 0.5);
+      background: rgba(255, 209, 102, 0.1);
+      color: var(--text);
+    }
+
+    .reward-item strong,
+    .reward-item span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .reward-item > span:last-child {
+      grid-column: 1 / -1;
+    }
+
+    .settings-list {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .rules-setting {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid rgba(143, 199, 255, 0.26);
+      border-radius: 8px;
+      background: rgba(143, 199, 255, 0.08);
+    }
+
+    .rules-setting span {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.25;
+    }
+
+    .shield-stepper {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .setting-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .setting-actions .setting-button {
+      flex: 0 1 auto;
+    }
+
+    .stepper-button {
+      min-width: 36px;
+      min-height: 34px;
+      border-radius: 8px;
+      background: rgba(143, 199, 255, 0.18);
+      box-shadow: inset 0 0 0 1px rgba(143, 199, 255, 0.24);
+      font-weight: 900;
+    }
+
+    .shield-value {
+      min-width: 58px;
+      color: var(--text);
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .setting-value {
+      min-width: 88px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 900;
+      text-align: right;
+    }
+
+    .setting-button {
+      min-width: 88px;
+      min-height: 34px;
+      padding: 0 10px;
+      border-radius: 8px;
+      background: rgba(143, 199, 255, 0.18);
+      box-shadow: inset 0 0 0 1px rgba(143, 199, 255, 0.24);
+      font-weight: 900;
     }
 
     .toast {
@@ -632,6 +1058,19 @@
         padding: 0 10px;
       }
 
+      .profile-card {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .chapter-card {
+        grid-template-columns: 24px 1fr;
+      }
+
+      .chapter-badge {
+        grid-column: 2;
+        justify-self: start;
+      }
+
       .dpad {
         grid-template-columns: repeat(3, 56px);
         grid-template-rows: repeat(3, 46px);
@@ -679,21 +1118,26 @@
         <strong id="levelText">1</strong>
       </div>
 
+      <div class="stat">
+        <span>星域</span>
+        <strong id="chapterText">月球</strong>
+      </div>
+
       <div class="stat mission">
-        <span>星球目标</span>
+        <span id="missionLabelText">星球目标</span>
         <strong id="missionText">0/5</strong>
         <div class="meter" aria-hidden="true"><span id="missionBar"></span></div>
       </div>
 
       <div class="stat">
         <span>能量</span>
-        <strong id="powerText">护盾 1/5</strong>
+        <strong id="powerText">护盾 2/5</strong>
       </div>
 
       <div class="action-group">
         <button class="command primary" id="startButton" type="button">开始</button>
         <button class="command" id="pauseButton" type="button">暂停</button>
-        <button class="command" id="rulesButton" type="button">规则</button>
+        <button class="command" id="rulesButton" type="button">设置</button>
         <button class="command" id="soundButton" type="button" aria-pressed="true">音效开</button>
       </div>
     </header>
@@ -704,24 +1148,122 @@
         <section class="overlay-panel" aria-live="polite">
           <h1 id="overlayTitle">太空任务待命</h1>
           <p id="overlayText">收集 5 颗星球，飞船就能进入下一片星域。</p>
-          <button class="command primary" id="overlayButton" type="button">开始任务</button>
+          <div class="overlay-actions">
+            <button class="command primary" id="overlayButton" type="button">开始任务</button>
+            <button class="command" id="posterButton" type="button" hidden>成绩海报</button>
+          </div>
         </section>
       </div>
       <div class="rules-menu" id="rulesPanel" role="dialog" aria-modal="true" hidden>
         <section class="rules-card" aria-labelledby="rulesTitle">
           <div class="rules-head">
-            <h2 id="rulesTitle">游戏规则</h2>
+            <h2 id="rulesTitle">设置与规则</h2>
             <button class="command" id="closeRulesButton" type="button">关闭</button>
           </div>
+          <div class="settings-list">
+            <div class="rules-setting">
+              <span>玩家</span>
+              <div class="setting-actions" aria-label="玩家设置">
+                <button class="setting-button" id="playerButton" type="button">小宇航员</button>
+                <button class="setting-button" id="addPlayerButton" type="button">新玩家</button>
+              </div>
+            </div>
+            <div class="rules-setting">
+              <span>安装版</span>
+              <button class="setting-button" id="installButton" type="button">检查中</button>
+            </div>
+            <div class="rules-setting">
+              <span id="chapterLabelText">当前星域</span>
+              <strong class="setting-value" id="chapterDetailText">月球基地</strong>
+            </div>
+            <div class="rules-setting">
+              <span>初始护盾</span>
+              <div class="shield-stepper" aria-label="初始护盾设置">
+                <button class="stepper-button" id="shieldDownButton" type="button" aria-label="减少初始护盾">−</button>
+                <strong class="shield-value" id="shieldConfigText">2/5</strong>
+                <button class="stepper-button" id="shieldUpButton" type="button" aria-label="增加初始护盾">+</button>
+              </div>
+            </div>
+            <div class="rules-setting">
+              <span>新手引导</span>
+              <button class="setting-button" id="tutorialButton" type="button" aria-pressed="true">开启</button>
+            </div>
+            <div class="rules-setting">
+              <span>新手保护</span>
+              <button class="setting-button" id="newbieButton" type="button" aria-pressed="true">开启</button>
+            </div>
+            <div class="rules-setting">
+              <span>默认穿墙</span>
+              <button class="setting-button" id="defaultWallButton" type="button" aria-pressed="false">关闭</button>
+            </div>
+            <div class="rules-setting">
+              <span>任务模式</span>
+              <button class="setting-button" id="missionModeButton" type="button">混合</button>
+            </div>
+            <div class="rules-setting">
+              <span>难度</span>
+              <button class="setting-button" id="difficultyButton" type="button">普通</button>
+            </div>
+            <div class="rules-setting">
+              <span>飞船皮肤</span>
+              <button class="setting-button" id="skinButton" type="button">探索者</button>
+            </div>
+            <div class="rules-setting">
+              <span>低干扰模式</span>
+              <button class="setting-button" id="calmButton" type="button" aria-pressed="false">关闭</button>
+            </div>
+            <div class="rules-setting">
+              <span>每日挑战</span>
+              <button class="setting-button" id="dailyButton" type="button" aria-pressed="false">关闭</button>
+            </div>
+            <div class="rules-setting">
+              <span id="dailyLabelText">今日最佳</span>
+              <strong class="setting-value" id="dailyBestText">0 分</strong>
+            </div>
+            <div class="rules-setting">
+              <span>微信分享</span>
+              <button class="setting-button" id="shareButton" type="button">分享成绩</button>
+            </div>
+          </div>
+          <div class="rules-section-title">规则</div>
           <ul class="rules-list">
-            <li>收集星球：加分，飞船变长。</li>
-            <li>达成星球目标：进入下一星域。</li>
+            <li>完成当前任务：进入下一星域。</li>
             <li>撞墙、撞自己或小行星：消耗 1 层护盾。</li>
             <li>护盾消耗后：1 秒后重新出发。</li>
             <li>护盾为 0 再撞击：任务结束。</li>
-            <li>护盾最多 5 层，道具可补给。</li>
+            <li>初始护盾可调，最多 5 层，道具可补给。</li>
+            <li>道具包括护盾、曲速、磁吸、减速、清障、双倍分。</li>
             <li>穿墙开：飞出边界会从另一侧回来。</li>
+            <li>每日挑战：当天地图和任务固定，可挑战今日最佳。</li>
+            <li>皮肤会随成就解锁，可在设置中切换。</li>
+            <li>低干扰模式会减少背景动效、闪光和粒子。</li>
+            <li>新手保护：开局 30 秒更慢，碰撞会自动救援。</li>
+            <li>星域章节：每 3 级进入新星域，背景、目标和陨石会变化。</li>
+            <li>多玩家榜：先选玩家再开始，成绩会写入本机 Top 10。</li>
           </ul>
+          <div class="rules-section-title">玩家档案</div>
+          <div class="profile-card" id="profileCard" aria-label="当前玩家档案"></div>
+          <div class="rules-section-title">星域地图</div>
+          <div class="chapter-map" id="chapterMapList" aria-label="星域章节地图"></div>
+          <div class="rules-section-title">章节奖励</div>
+          <div class="reward-list" id="chapterRewardList" aria-label="章节专属奖励"></div>
+          <div class="rules-section-title">本机排行榜 Top 10</div>
+          <div class="recent-list" id="leaderboardList" aria-label="本机排行榜 Top 10"></div>
+          <div class="rules-section-title">最近成绩</div>
+          <div class="recent-list" id="recentList" aria-label="最近 5 次成绩"></div>
+          <div class="rules-section-title">成就</div>
+          <div class="achievement-list" id="achievementList" aria-label="成就列表"></div>
+        </section>
+      </div>
+      <div class="poster-menu" id="posterPanel" role="dialog" aria-modal="true" hidden>
+        <section class="poster-card" aria-labelledby="posterTitle">
+          <h2 id="posterTitle">成绩海报</h2>
+          <img class="poster-preview" id="posterImage" alt="成绩海报预览">
+          <div class="poster-actions">
+            <button class="command primary" id="sharePosterButton" type="button">分享</button>
+            <button class="command" id="downloadPosterButton" type="button">保存</button>
+            <button class="command" id="closePosterButton" type="button">关闭</button>
+          </div>
         </section>
       </div>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -752,6 +1294,8 @@
         score: document.querySelector("#scoreText"),
         bestScore: document.querySelector("#bestScoreText"),
         level: document.querySelector("#levelText"),
+        chapter: document.querySelector("#chapterText"),
+        missionLabel: document.querySelector("#missionLabelText"),
         mission: document.querySelector("#missionText"),
         missionBar: document.querySelector("#missionBar"),
         power: document.querySelector("#powerText"),
@@ -760,12 +1304,43 @@
         overlayTitle: document.querySelector("#overlayTitle"),
         overlayText: document.querySelector("#overlayText"),
         overlayButton: document.querySelector("#overlayButton"),
+        posterButton: document.querySelector("#posterButton"),
+        posterPanel: document.querySelector("#posterPanel"),
+        posterImage: document.querySelector("#posterImage"),
+        sharePosterButton: document.querySelector("#sharePosterButton"),
+        downloadPosterButton: document.querySelector("#downloadPosterButton"),
+        closePosterButton: document.querySelector("#closePosterButton"),
         rulesPanel: document.querySelector("#rulesPanel"),
         startButton: document.querySelector("#startButton"),
         pauseButton: document.querySelector("#pauseButton"),
         rulesButton: document.querySelector("#rulesButton"),
         soundButton: document.querySelector("#soundButton"),
         closeRulesButton: document.querySelector("#closeRulesButton"),
+        playerButton: document.querySelector("#playerButton"),
+        addPlayerButton: document.querySelector("#addPlayerButton"),
+        installButton: document.querySelector("#installButton"),
+        chapterLabel: document.querySelector("#chapterLabelText"),
+        chapterDetail: document.querySelector("#chapterDetailText"),
+        shieldConfig: document.querySelector("#shieldConfigText"),
+        shieldDownButton: document.querySelector("#shieldDownButton"),
+        shieldUpButton: document.querySelector("#shieldUpButton"),
+        tutorialButton: document.querySelector("#tutorialButton"),
+        newbieButton: document.querySelector("#newbieButton"),
+        defaultWallButton: document.querySelector("#defaultWallButton"),
+        missionModeButton: document.querySelector("#missionModeButton"),
+        difficultyButton: document.querySelector("#difficultyButton"),
+        skinButton: document.querySelector("#skinButton"),
+        calmButton: document.querySelector("#calmButton"),
+        dailyButton: document.querySelector("#dailyButton"),
+        dailyLabel: document.querySelector("#dailyLabelText"),
+        dailyBest: document.querySelector("#dailyBestText"),
+        shareButton: document.querySelector("#shareButton"),
+        profileCard: document.querySelector("#profileCard"),
+        chapterMapList: document.querySelector("#chapterMapList"),
+        chapterRewardList: document.querySelector("#chapterRewardList"),
+        leaderboardList: document.querySelector("#leaderboardList"),
+        recentList: document.querySelector("#recentList"),
+        achievementList: document.querySelector("#achievementList"),
         wallButton: document.querySelector("#wallButton"),
         restartButton: document.querySelector("#restartButton"),
         toast: document.querySelector("#toast")
@@ -777,6 +1352,256 @@
       const START_DELAY_MS = 1000;
       const RECORD_KEY = "spaceSnake.records.v1";
       const SOUND_KEY = "spaceSnake.sound.v1";
+      const SHIELD_CONFIG_KEY = "spaceSnake.initialShields.v1";
+      const TUTORIAL_KEY = "spaceSnake.tutorial.v1";
+      const DEFAULT_WALL_KEY = "spaceSnake.defaultWall.v1";
+      const MISSION_MODE_KEY = "spaceSnake.missionMode.v1";
+      const DIFFICULTY_KEY = "spaceSnake.difficulty.v1";
+      const ACHIEVEMENT_KEY = "spaceSnake.achievements.v1";
+      const DAILY_MODE_KEY = "spaceSnake.dailyMode.v1";
+      const DAILY_RECORD_KEY = "spaceSnake.dailyRecords.v1";
+      const SKIN_KEY = "spaceSnake.skin.v1";
+      const RECENT_RUNS_KEY = "spaceSnake.recentRuns.v1";
+      const LOW_DISTRACTION_KEY = "spaceSnake.lowDistraction.v1";
+      const LEADERBOARD_KEY = "spaceSnake.leaderboard.v1";
+      const NEWBIE_PROTECTION_KEY = "spaceSnake.newbieProtection.v1";
+      const PLAYERS_KEY = "spaceSnake.players.v1";
+      const ACTIVE_PLAYER_KEY = "spaceSnake.activePlayer.v1";
+      const PLAYER_PROFILES_KEY = "spaceSnake.playerProfiles.v1";
+      const SHARE_TITLE = "星际飞船贪吃蛇";
+      const SHARE_TEXT = "驾驶小飞船收集星球，完成任务，解锁成就。";
+      const SHARE_URL = "https://wxj221217.github.io/space-snake/";
+      const DAILY_TYPES = ["collect", "clean", "wall"];
+      const MISSION_MODES = ["mixed", "collect", "clean", "wall"];
+      const MISSION_MODE_LABELS = {
+        mixed: "混合",
+        collect: "收集",
+        clean: "无伤",
+        wall: "穿墙"
+      };
+      const DIFFICULTIES = ["easy", "normal", "hard"];
+      const DIFFICULTY_LABELS = {
+        easy: "简单",
+        normal: "普通",
+        hard: "挑战"
+      };
+      const DIFFICULTY_CONFIG = {
+        easy: { speedBonus: 70, targetDelta: -1, obstacleBonus: -1 },
+        normal: { speedBonus: 0, targetDelta: 0, obstacleBonus: 0 },
+        hard: { speedBonus: -55, targetDelta: 1, obstacleBonus: 2 }
+      };
+      const DEFAULT_PLAYER = { id: "pilot", name: "小宇航员" };
+      const CHAPTERS = [
+        {
+          id: "moon",
+          short: "月球",
+          title: "月球基地",
+          range: "1-3",
+          minLevel: 1,
+          accent: "#61f2d5",
+          board: "rgba(143, 199, 255, 0.36)",
+          bg: ["#050818", "#0b1230", "#141d45"],
+          nebula: ["rgba(95, 141, 255, 0.11)", "rgba(97, 242, 213, 0.08)", "rgba(255, 122, 182, 0.07)"],
+          obstacleBonus: 0,
+          targetDelta: 0,
+          speedDelta: 0,
+          story: "训练飞船，熟悉星球采集。",
+          reward: {
+            label: "月球学员",
+            type: "称号",
+            description: "完成月球基地后获得称号。",
+            title: "月球学员"
+          }
+        },
+        {
+          id: "mars",
+          short: "火星",
+          title: "火星沙海",
+          range: "4-6",
+          minLevel: 4,
+          accent: "#ff9f43",
+          board: "rgba(255, 159, 67, 0.42)",
+          bg: ["#120916", "#341524", "#4a1f22"],
+          nebula: ["rgba(255, 159, 67, 0.12)", "rgba(255, 107, 122, 0.08)", "rgba(255, 209, 102, 0.06)"],
+          obstacleBonus: 1,
+          targetDelta: 0,
+          speedDelta: -8,
+          story: "沙尘让陨石更醒目，航线更紧张。",
+          reward: {
+            label: "火星燃料",
+            type: "道具",
+            description: "曲速推进持续 +2 回合。",
+            bonus: "warp_plus"
+          }
+        },
+        {
+          id: "jupiter",
+          short: "木星",
+          title: "木星风暴",
+          range: "7-9",
+          minLevel: 7,
+          accent: "#ffd166",
+          board: "rgba(255, 209, 102, 0.44)",
+          bg: ["#07111c", "#1f2a3f", "#3a2d20"],
+          nebula: ["rgba(255, 209, 102, 0.11)", "rgba(143, 199, 255, 0.08)", "rgba(255, 159, 67, 0.08)"],
+          obstacleBonus: 2,
+          targetDelta: 1,
+          speedDelta: -16,
+          story: "风暴区任务更长，需要更稳的节奏。",
+          reward: {
+            label: "木星护盾",
+            type: "加成",
+            description: "每局开局护盾 +1，不超过上限。",
+            bonus: "shield_start"
+          }
+        },
+        {
+          id: "nebula",
+          short: "星云",
+          title: "彩虹星云",
+          range: "10-12",
+          minLevel: 10,
+          accent: "#c084fc",
+          board: "rgba(192, 132, 252, 0.46)",
+          bg: ["#08091c", "#211942", "#351b49"],
+          nebula: ["rgba(192, 132, 252, 0.11)", "rgba(97, 242, 213, 0.08)", "rgba(255, 122, 182, 0.09)"],
+          obstacleBonus: 2,
+          targetDelta: 2,
+          speedDelta: -24,
+          story: "星云漂亮但复杂，适合冲高分。",
+          reward: {
+            label: "星云号",
+            type: "皮肤",
+            description: "解锁飞船皮肤：星云号。",
+            skin: "nebula"
+          }
+        },
+        {
+          id: "blackhole",
+          short: "黑洞",
+          title: "黑洞边缘",
+          range: "13+",
+          minLevel: 13,
+          accent: "#ff6b7a",
+          board: "rgba(255, 107, 122, 0.48)",
+          bg: ["#03040c", "#0d1024", "#220b1a"],
+          nebula: ["rgba(255, 107, 122, 0.1)", "rgba(255, 209, 102, 0.06)", "rgba(143, 199, 255, 0.055)"],
+          obstacleBonus: 3,
+          targetDelta: 2,
+          speedDelta: -32,
+          story: "终极星域，陨石密集，考验反应。",
+          reward: {
+            label: "黑洞王牌",
+            type: "称号",
+            description: "双倍分数持续 +4 回合。",
+            title: "黑洞王牌",
+            bonus: "double_plus"
+          }
+        }
+      ];
+      const ACHIEVEMENTS = [
+        { id: "first_planet", title: "第一次采集", text: "收集 1 颗星球" },
+        { id: "level_3", title: "星域新手", text: "到达第 3 级星域" },
+        { id: "level_5", title: "深空队长", text: "到达第 5 级星域" },
+        { id: "planet_20", title: "星球收藏家", text: "单局收集 20 颗星球" },
+        { id: "clean_clear", title: "护盾大师", text: "完成 1 次无伤任务" },
+        { id: "wall_clear", title: "穿墙专家", text: "完成 1 次穿墙任务" }
+      ];
+      const SKINS = [
+        {
+          id: "classic",
+          label: "探索者",
+          unlock: null,
+          colors: {
+            body: "#61f2d5",
+            bodyAlt: "#8fc7ff",
+            hull: "#eaf8ff",
+            nose: "#61f2d5",
+            wing: "#ffd166",
+            window: "#8fc7ff",
+            flameA: "#ff6b7a",
+            flameB: "#ffd166",
+            glow: "rgba(97, 242, 213, 0.5)"
+          }
+        },
+        {
+          id: "aurora",
+          label: "极光号",
+          unlock: "level_3",
+          colors: {
+            body: "#65f4a7",
+            bodyAlt: "#7ad7ff",
+            hull: "#eafff5",
+            nose: "#65f4a7",
+            wing: "#b8f7ff",
+            window: "#4ea1ff",
+            flameA: "#65f4a7",
+            flameB: "#f4ff8a",
+            glow: "rgba(101, 244, 167, 0.5)"
+          }
+        },
+        {
+          id: "solar",
+          label: "太阳翼",
+          unlock: "level_5",
+          colors: {
+            body: "#ff9f43",
+            bodyAlt: "#ffd166",
+            hull: "#fff2d6",
+            nose: "#ff6b7a",
+            wing: "#ffd166",
+            window: "#8fc7ff",
+            flameA: "#ff4d6d",
+            flameB: "#ffe66d",
+            glow: "rgba(255, 159, 67, 0.52)"
+          }
+        },
+        {
+          id: "nebula",
+          label: "星云号",
+          unlock: "planet_20",
+          colors: {
+            body: "#c084fc",
+            bodyAlt: "#ff7ab6",
+            hull: "#f4e8ff",
+            nose: "#8fc7ff",
+            wing: "#c084fc",
+            window: "#61f2d5",
+            flameA: "#7c3aed",
+            flameB: "#ff7ab6",
+            glow: "rgba(192, 132, 252, 0.48)"
+          }
+        },
+        {
+          id: "guardian",
+          label: "护盾号",
+          unlock: "clean_clear",
+          colors: {
+            body: "#34d399",
+            bodyAlt: "#a7f3d0",
+            hull: "#ecfdf5",
+            nose: "#10b981",
+            wing: "#61f2d5",
+            window: "#071026",
+            flameA: "#61f2d5",
+            flameB: "#ffffff",
+            glow: "rgba(52, 211, 153, 0.5)"
+          }
+        }
+      ];
+      const CRASH_REASON_LABELS = {
+        wall: "撞到边界",
+        self: "撞到自己",
+        obstacle: "撞到小行星"
+      };
+      const POWER_UPS = {
+        shield: { label: "护盾补给", colors: ["#61f2d5", "#8fc7ff"], score: 40 },
+        warp: { label: "曲速推进", colors: ["#ffd166", "#ff7ab6"], score: 60 },
+        magnet: { label: "星球磁吸", colors: ["#a7f3d0", "#61f2d5"], score: 50 },
+        slow: { label: "时间减速", colors: ["#8fc7ff", "#c084fc"], score: 50 },
+        clear: { label: "清除陨石", colors: ["#ffffff", "#ffd166"], score: 80 },
+        double: { label: "双倍分数", colors: ["#ffe66d", "#ff9f43"], score: 60 }
+      };
       // Grid directions are shared by keyboard, touch buttons, and swipe input.
       const DIRECTIONS = {
         up: { x: 0, y: -1 },
@@ -794,10 +1619,43 @@
         totalCollected: 0,
         newRecord: false,
         records: { score: 0, level: 1, planets: 0 },
+        players: [DEFAULT_PLAYER],
+        activePlayerId: DEFAULT_PLAYER.id,
+        playerProfiles: {},
         soundEnabled: true,
-        shields: 1,
+        lowDistraction: false,
+        newbieProtection: true,
+        initialShields: 2,
+        shields: 2,
+        tutorialEnabled: true,
+        defaultWallMode: false,
+        missionMode: "mixed",
+        difficulty: "normal",
+        dailyMode: false,
+        dailyRecords: {},
+        dailyKey: "",
+        dailyChallenge: null,
+        dailyNewRecord: false,
+        skinId: "classic",
+        recentRuns: [],
+        leaderboard: [],
+        achievements: {},
+        chapterRewards: {},
+        completedMissionType: null,
+        levelSummary: null,
+        levelStartedAt: 0,
+        levelStartScore: 0,
+        levelStartPlanets: 0,
+        levelStartShields: 0,
+        protectionUntil: 0,
+        mission: null,
+        missionProgress: 0,
+        crashReason: null,
         wallMode: false,
         warpTicks: 0,
+        magnetTicks: 0,
+        slowTicks: 0,
+        doubleTicks: 0,
         direction: DIRECTIONS.right,
         nextDirection: DIRECTIONS.right,
         ship: [],
@@ -808,12 +1666,14 @@
         flash: 0
       };
 
+      let deferredInstallPrompt = null;
+
       // Decorative background stars are deterministic enough to reuse every frame.
-      const stars = Array.from({ length: 140 }, () => ({
+      const stars = Array.from({ length: 80 }, () => ({
         x: Math.random(),
         y: Math.random(),
-        size: 0.7 + Math.random() * 2.2,
-        speed: 0.006 + Math.random() * 0.028,
+        size: 0.45 + Math.random() * 1.2,
+        speed: 0.002 + Math.random() * 0.01,
         phase: Math.random() * Math.PI * 2
       }));
 
@@ -829,6 +1689,8 @@
       let toastTimer = 0;
       let pointerStart = null;
       let audioContext = null;
+      let runRandom = Math.random;
+      let posterDataUrl = "";
 
       function clamp(value, min, max) {
         return Math.max(min, Math.min(max, value));
@@ -850,14 +1712,274 @@
         };
       }
 
+      function hashString(text) {
+        // FNV-style hashing gives each date a stable 32-bit challenge seed.
+        let hash = 2166136261;
+        for (let i = 0; i < text.length; i += 1) {
+          hash ^= text.charCodeAt(i);
+          hash = Math.imul(hash, 16777619);
+        }
+        return hash >>> 0;
+      }
+
+      function seededRandom(seed) {
+        let value = seed >>> 0;
+        return () => {
+          value += 0x6D2B79F5;
+          let mixed = value;
+          mixed = Math.imul(mixed ^ (mixed >>> 15), mixed | 1);
+          mixed ^= mixed + Math.imul(mixed ^ (mixed >>> 7), mixed | 61);
+          return ((mixed ^ (mixed >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      function gameRandom() {
+        return runRandom();
+      }
+
+      function activeChapter(level = state.level) {
+        let chapter = CHAPTERS[0];
+        for (const item of CHAPTERS) {
+          if (level >= item.minLevel) {
+            chapter = item;
+          }
+        }
+        return chapter;
+      }
+
+      function nextChapter(level = state.level) {
+        return CHAPTERS.find((chapter) => chapter.minLevel > level) || null;
+      }
+
+      function chapterProgressText(level = state.level) {
+        const chapter = activeChapter(level);
+        const next = nextChapter(level);
+        if (!next) {
+          return `${chapter.title} · 第 ${level} 级 · 终极星域`;
+        }
+        return `${chapter.title} · 第 ${level} 级 · ${next.minLevel - level} 级后到 ${next.short}`;
+      }
+
+      function sanitizePlayerName(value) {
+        return String(value || "")
+          .replace(/[<>"'&]/g, "")
+          .replace(/\s+/g, "")
+          .slice(0, 8);
+      }
+
+      function normalizePlayers(value) {
+        const seen = new Set();
+        const list = Array.isArray(value) ? value : [];
+        const players = list
+          .map((player, index) => {
+            const name = sanitizePlayerName(player && player.name) || (index === 0 ? DEFAULT_PLAYER.name : "");
+            const id = String(player && player.id ? player.id : `player-${Date.now()}-${index}`);
+            return name ? { id, name } : null;
+          })
+          .filter((player) => {
+            if (!player || seen.has(player.id)) {
+              return false;
+            }
+            seen.add(player.id);
+            return true;
+          })
+          .slice(0, 8);
+        return players.length ? players : [{ ...DEFAULT_PLAYER }];
+      }
+
+      function activePlayer() {
+        return state.players.find((player) => player.id === state.activePlayerId) || state.players[0] || DEFAULT_PLAYER;
+      }
+
+      function emptyProfile() {
+        return {
+          records: { score: 0, level: 1, planets: 0 },
+          achievements: {},
+          skinId: "classic",
+          recentRuns: [],
+          chapterRewards: {}
+        };
+      }
+
+      function normalizeRecords(value) {
+        return {
+          score: Math.max(0, Number(value && value.score) || 0),
+          level: Math.max(1, Number(value && value.level) || 1),
+          planets: Math.max(0, Number(value && value.planets) || 0)
+        };
+      }
+
+      function normalizeProfile(value, fallback = emptyProfile()) {
+        const source = value && typeof value === "object" ? value : fallback;
+        const fallbackProfile = fallback && typeof fallback === "object" ? fallback : emptyProfile();
+        const skinId = SKINS.some((skin) => skin.id === source.skinId)
+          ? source.skinId
+          : SKINS.some((skin) => skin.id === fallbackProfile.skinId)
+          ? fallbackProfile.skinId
+          : "classic";
+        return {
+          records: normalizeRecords(source.records || fallbackProfile.records),
+          achievements: { ...(fallbackProfile.achievements || {}), ...(source.achievements || {}) },
+          skinId,
+          recentRuns: Array.isArray(source.recentRuns) ? source.recentRuns.slice(0, 5) : (fallbackProfile.recentRuns || []).slice(0, 5),
+          chapterRewards: { ...(fallbackProfile.chapterRewards || {}), ...(source.chapterRewards || {}) }
+        };
+      }
+
+      function normalizePlayerProfiles(value, legacyProfile) {
+        const source = value && typeof value === "object" ? value : {};
+        const profiles = {};
+        state.players.forEach((player, index) => {
+          const fallback = index === 0 ? legacyProfile : emptyProfile();
+          profiles[player.id] = normalizeProfile(source[player.id], fallback);
+        });
+        return profiles;
+      }
+
+      function activeProfile() {
+        const player = activePlayer();
+        if (!state.playerProfiles[player.id]) {
+          state.playerProfiles[player.id] = emptyProfile();
+        }
+        return state.playerProfiles[player.id];
+      }
+
+      function syncActiveProfileToState() {
+        const profile = normalizeProfile(activeProfile());
+        state.records = { ...profile.records };
+        state.achievements = { ...profile.achievements };
+        state.skinId = profile.skinId;
+        state.recentRuns = profile.recentRuns.slice(0, 5);
+        state.chapterRewards = { ...profile.chapterRewards };
+      }
+
+      function saveActiveProfile() {
+        const player = activePlayer();
+        state.playerProfiles[player.id] = normalizeProfile({
+          records: state.records,
+          achievements: state.achievements,
+          skinId: state.skinId,
+          recentRuns: state.recentRuns,
+          chapterRewards: state.chapterRewards
+        });
+        safeWriteStorage(PLAYER_PROFILES_KEY, JSON.stringify(state.playerProfiles));
+      }
+
+      function todayKey(date = new Date()) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      function formatDailyLabel(key) {
+        const [, month, day] = key.split("-");
+        return `${Number(month)}月${Number(day)}日`;
+      }
+
+      function createDailyChallenge(key) {
+        const seed = hashString(`space-snake-${key}`);
+        return {
+          key,
+          label: formatDailyLabel(key),
+          code: seed.toString(36).slice(0, 4).toUpperCase(),
+          typeOffset: seed % DAILY_TYPES.length,
+          targetDelta: Math.floor(seed / 7) % 2
+        };
+      }
+
+      function syncDailyChallenge() {
+        const key = todayKey();
+        if (state.dailyKey !== key || !state.dailyChallenge) {
+          state.dailyKey = key;
+          state.dailyChallenge = createDailyChallenge(key);
+        }
+      }
+
+      function resetRunRandom() {
+        syncDailyChallenge();
+        if (state.dailyMode) {
+          runRandom = seededRandom(hashString(`${state.dailyKey}-${state.difficulty}`));
+          return;
+        }
+
+        runRandom = Math.random;
+      }
+
       function missionTarget() {
-        return Math.min(10, 5 + Math.floor((state.level - 1) * 0.8));
+        const config = DIFFICULTY_CONFIG[state.difficulty];
+        const dailyDelta = state.dailyMode && state.dailyChallenge ? state.dailyChallenge.targetDelta : 0;
+        const chapter = activeChapter();
+        return Math.min(14, Math.max(3, 5 + Math.floor((state.level - 1) * 0.8) + config.targetDelta + dailyDelta + chapter.targetDelta));
+      }
+
+      function missionTypeForLevel() {
+        if (state.dailyMode) {
+          syncDailyChallenge();
+          return DAILY_TYPES[(state.level - 1 + state.dailyChallenge.typeOffset) % DAILY_TYPES.length];
+        }
+
+        if (state.missionMode !== "mixed") {
+          return state.missionMode;
+        }
+
+        const types = ["collect", "clean", "wall"];
+        return types[(state.level - 1) % types.length];
+      }
+
+      function createMission() {
+        const type = missionTypeForLevel();
+        const target = missionTarget();
+        const mission = {
+          type,
+          target,
+          title: "星球目标",
+          description: `收集 ${target} 颗星球`
+        };
+
+        if (type === "clean") {
+          mission.target = Math.max(3, target - 1);
+          mission.title = "无伤任务";
+          mission.description = `不消耗护盾，收集 ${mission.target} 颗星球`;
+        }
+
+        if (type === "wall") {
+          mission.target = Math.max(3, target - 2);
+          mission.title = "穿墙任务";
+          mission.description = `开启穿墙，收集 ${mission.target} 颗星球`;
+        }
+
+        if (state.dailyMode && state.dailyChallenge) {
+          mission.title = `今日${mission.title}`;
+          mission.description = `${state.dailyChallenge.label}挑战：${mission.description}`;
+        }
+
+        return mission;
+      }
+
+      function resetMissionProgress() {
+        state.mission = createMission();
+        state.missionProgress = 0;
+        state.missionCollected = 0;
+      }
+
+      function missionComplete() {
+        return state.mission && state.missionProgress >= state.mission.target;
       }
 
       function moveInterval() {
         // Level 1 starts slowly; each level trims the interval until the floor.
-        const base = Math.max(110, 380 - (state.level - 1) * 22);
-        return state.warpTicks > 0 ? base * 0.72 : base;
+        const config = DIFFICULTY_CONFIG[state.difficulty];
+        const chapter = activeChapter();
+        const base = Math.max(88, 380 + config.speedBonus + chapter.speedDelta - (state.level - 1) * 22);
+        let interval = state.warpTicks > 0 ? base * 0.72 : base;
+        if (state.slowTicks > 0) {
+          interval *= 1.35;
+        }
+        if (newbieProtectionActive()) {
+          interval *= 1.35;
+        }
+        return interval;
       }
 
       function initialShip() {
@@ -887,30 +2009,540 @@
 
       function loadPreferences() {
         const savedRecords = safeReadStorage(RECORD_KEY);
+        const savedPlayers = safeReadStorage(PLAYERS_KEY);
+        const savedActivePlayer = safeReadStorage(ACTIVE_PLAYER_KEY);
+        const savedPlayerProfiles = safeReadStorage(PLAYER_PROFILES_KEY);
         const savedSound = safeReadStorage(SOUND_KEY);
+        const savedLowDistraction = safeReadStorage(LOW_DISTRACTION_KEY);
+        const savedNewbieProtection = safeReadStorage(NEWBIE_PROTECTION_KEY);
+        const savedInitialShields = safeReadStorage(SHIELD_CONFIG_KEY);
+        const savedTutorial = safeReadStorage(TUTORIAL_KEY);
+        const savedDefaultWall = safeReadStorage(DEFAULT_WALL_KEY);
+        const savedMissionMode = safeReadStorage(MISSION_MODE_KEY);
+        const savedDifficulty = safeReadStorage(DIFFICULTY_KEY);
+        const savedAchievements = safeReadStorage(ACHIEVEMENT_KEY);
+        const savedDailyMode = safeReadStorage(DAILY_MODE_KEY);
+        const savedDailyRecords = safeReadStorage(DAILY_RECORD_KEY);
+        const savedSkin = safeReadStorage(SKIN_KEY);
+        const savedRecentRuns = safeReadStorage(RECENT_RUNS_KEY);
+        const savedLeaderboard = safeReadStorage(LEADERBOARD_KEY);
 
         if (savedRecords) {
           try {
             const parsed = JSON.parse(savedRecords);
-            state.records = {
-              score: Math.max(0, Number(parsed.score) || 0),
-              level: Math.max(1, Number(parsed.level) || 1),
-              planets: Math.max(0, Number(parsed.planets) || 0)
-            };
+            state.records = normalizeRecords(parsed);
           } catch (error) {
             state.records = { score: 0, level: 1, planets: 0 };
           }
         }
 
+        if (savedPlayers) {
+          try {
+            state.players = normalizePlayers(JSON.parse(savedPlayers));
+          } catch (error) {
+            state.players = [{ ...DEFAULT_PLAYER }];
+          }
+        } else {
+          state.players = [{ ...DEFAULT_PLAYER }];
+        }
+
+        state.activePlayerId = state.players.some((player) => player.id === savedActivePlayer)
+          ? savedActivePlayer
+          : state.players[0].id;
+
         state.soundEnabled = savedSound !== "off";
+        state.lowDistraction = savedLowDistraction === "on";
+        state.newbieProtection = savedNewbieProtection !== "off";
+        state.initialShields = clamp(Number(savedInitialShields) || 2, 1, SHIELD_MAX);
+        state.tutorialEnabled = savedTutorial !== "off";
+        state.defaultWallMode = savedDefaultWall === "on";
+        state.missionMode = MISSION_MODES.includes(savedMissionMode) ? savedMissionMode : "mixed";
+        state.difficulty = DIFFICULTIES.includes(savedDifficulty) ? savedDifficulty : "normal";
+        state.dailyMode = savedDailyMode === "on";
+        state.skinId = SKINS.some((skin) => skin.id === savedSkin) ? savedSkin : "classic";
+
+        if (savedAchievements) {
+          try {
+            state.achievements = JSON.parse(savedAchievements) || {};
+          } catch (error) {
+            state.achievements = {};
+          }
+        }
+
+        if (savedDailyRecords) {
+          try {
+            state.dailyRecords = JSON.parse(savedDailyRecords) || {};
+          } catch (error) {
+            state.dailyRecords = {};
+          }
+        }
+
+        if (savedRecentRuns) {
+          try {
+            const parsedRuns = JSON.parse(savedRecentRuns);
+            state.recentRuns = Array.isArray(parsedRuns) ? parsedRuns.slice(0, 5) : [];
+          } catch (error) {
+            state.recentRuns = [];
+          }
+        }
+
+        if (savedLeaderboard) {
+          try {
+            const parsedLeaderboard = JSON.parse(savedLeaderboard);
+            state.leaderboard = sortLeaderboardRuns(parsedLeaderboard);
+          } catch (error) {
+            state.leaderboard = [];
+          }
+        }
+
+        let parsedProfiles = {};
+        if (savedPlayerProfiles) {
+          try {
+            parsedProfiles = JSON.parse(savedPlayerProfiles) || {};
+          } catch (error) {
+            parsedProfiles = {};
+          }
+        }
+
+        const legacyProfile = normalizeProfile({
+          records: state.records,
+          achievements: state.achievements,
+          skinId: state.skinId,
+          recentRuns: state.recentRuns,
+          chapterRewards: {}
+        });
+        state.playerProfiles = normalizePlayerProfiles(parsedProfiles, legacyProfile);
+        syncActiveProfileToState();
+
+        syncDailyChallenge();
+        migrateAchievementsFromRecords();
+        unlockChapterRewards(true);
+        ensureSelectedSkinUnlocked();
+        saveActiveProfile();
       }
 
       function saveRecords() {
         safeWriteStorage(RECORD_KEY, JSON.stringify(state.records));
+        saveActiveProfile();
+      }
+
+      function savePlayers() {
+        state.players = normalizePlayers(state.players);
+        safeWriteStorage(PLAYERS_KEY, JSON.stringify(state.players));
+        state.playerProfiles = normalizePlayerProfiles(state.playerProfiles, emptyProfile());
+        saveActiveProfile();
+      }
+
+      function saveActivePlayer() {
+        safeWriteStorage(ACTIVE_PLAYER_KEY, activePlayer().id);
       }
 
       function saveSoundPreference() {
         safeWriteStorage(SOUND_KEY, state.soundEnabled ? "on" : "off");
+      }
+
+      function saveLowDistractionPreference() {
+        safeWriteStorage(LOW_DISTRACTION_KEY, state.lowDistraction ? "on" : "off");
+      }
+
+      function saveNewbieProtectionPreference() {
+        safeWriteStorage(NEWBIE_PROTECTION_KEY, state.newbieProtection ? "on" : "off");
+      }
+
+      function saveShieldPreference() {
+        safeWriteStorage(SHIELD_CONFIG_KEY, String(state.initialShields));
+      }
+
+      function saveTutorialPreference() {
+        safeWriteStorage(TUTORIAL_KEY, state.tutorialEnabled ? "on" : "off");
+      }
+
+      function saveDefaultWallPreference() {
+        safeWriteStorage(DEFAULT_WALL_KEY, state.defaultWallMode ? "on" : "off");
+      }
+
+      function saveMissionModePreference() {
+        safeWriteStorage(MISSION_MODE_KEY, state.missionMode);
+      }
+
+      function saveDifficultyPreference() {
+        safeWriteStorage(DIFFICULTY_KEY, state.difficulty);
+      }
+
+      function saveDailyModePreference() {
+        safeWriteStorage(DAILY_MODE_KEY, state.dailyMode ? "on" : "off");
+      }
+
+      function saveDailyRecords() {
+        const keys = Object.keys(state.dailyRecords).sort().slice(-14);
+        const pruned = {};
+        keys.forEach((key) => {
+          pruned[key] = state.dailyRecords[key];
+        });
+        state.dailyRecords = pruned;
+        safeWriteStorage(DAILY_RECORD_KEY, JSON.stringify(state.dailyRecords));
+      }
+
+      function saveSkinPreference() {
+        safeWriteStorage(SKIN_KEY, state.skinId);
+        saveActiveProfile();
+      }
+
+      function saveRecentRuns() {
+        state.recentRuns = state.recentRuns.slice(0, 5);
+        safeWriteStorage(RECENT_RUNS_KEY, JSON.stringify(state.recentRuns));
+        saveActiveProfile();
+      }
+
+      function saveLeaderboard() {
+        state.leaderboard = sortLeaderboardRuns(state.leaderboard);
+        safeWriteStorage(LEADERBOARD_KEY, JSON.stringify(state.leaderboard));
+      }
+
+      function saveAchievements() {
+        safeWriteStorage(ACHIEVEMENT_KEY, JSON.stringify(state.achievements));
+        saveActiveProfile();
+      }
+
+      function saveChapterRewards() {
+        saveActiveProfile();
+      }
+
+      function currentDailyRecord() {
+        syncDailyChallenge();
+        const record = state.dailyRecords[state.dailyKey] || {};
+        return {
+          score: Math.max(0, Number(record.score) || 0),
+          level: Math.max(1, Number(record.level) || 1),
+          planets: Math.max(0, Number(record.planets) || 0)
+        };
+      }
+
+      function updateDailyRecord() {
+        if (!state.dailyMode) {
+          state.dailyNewRecord = false;
+          return false;
+        }
+
+        syncDailyChallenge();
+        const current = currentDailyRecord();
+        const next = {
+          score: Math.max(current.score, state.score),
+          level: Math.max(current.level, state.level),
+          planets: Math.max(current.planets, state.totalCollected)
+        };
+        const isNewDailyRecord = next.score > current.score;
+        state.dailyRecords[state.dailyKey] = next;
+        state.dailyNewRecord = isNewDailyRecord;
+        saveDailyRecords();
+        return isNewDailyRecord;
+      }
+
+      function effectiveInitialShields() {
+        return Math.min(SHIELD_MAX, state.initialShields + (rewardBonusActive("shield_start") ? 1 : 0));
+      }
+
+      function activePowerText() {
+        if (newbieProtectionActive()) return `保护 ${Math.ceil((state.protectionUntil - performance.now()) / 1000)}s`;
+        if (state.doubleTicks > 0) return `双倍 ${state.doubleTicks}`;
+        if (state.magnetTicks > 0) return `磁吸 ${state.magnetTicks}`;
+        if (state.slowTicks > 0) return `减速 ${state.slowTicks}`;
+        if (state.warpTicks > 0) return `曲速 ${state.warpTicks}`;
+        return `护盾 ${state.shields}/${SHIELD_MAX}`;
+      }
+
+      function newbieProtectionActive() {
+        const activeStatus = state.status === "running" || state.status === "launching" || state.status === "paused" || state.status === "levelup";
+        return Boolean(activeStatus && newbieProtectionWindowActive());
+      }
+
+      function newbieProtectionWindowActive() {
+        return Boolean(state.newbieProtection && performance.now() < state.protectionUntil);
+      }
+
+      function startLevelTracking() {
+        state.levelStartedAt = performance.now();
+        state.levelStartScore = state.score;
+        state.levelStartPlanets = state.totalCollected;
+        state.levelStartShields = state.shields;
+      }
+
+      function levelElapsedSeconds() {
+        if (!state.levelStartedAt) {
+          return 0;
+        }
+        return Math.max(1, Math.round((performance.now() - state.levelStartedAt) / 1000));
+      }
+
+      function createLevelSummary() {
+        const chapter = activeChapter();
+        const upcoming = nextChapter(state.level);
+        return {
+          level: state.level,
+          chapter: chapter.title,
+          nextChapter: upcoming && state.level + 1 >= upcoming.minLevel ? upcoming.title : "",
+          missionTitle: state.mission ? state.mission.title : "星球目标",
+          seconds: levelElapsedSeconds(),
+          score: Math.max(0, state.score - state.levelStartScore),
+          planets: Math.max(0, state.totalCollected - state.levelStartPlanets),
+          shields: state.shields,
+          reward: "护盾 +1"
+        };
+      }
+
+      function chapterRewardRequiredLevel(chapter) {
+        const upcoming = nextChapter(chapter.minLevel);
+        return upcoming ? upcoming.minLevel : chapter.minLevel;
+      }
+
+      function chapterRewardUnlocked(chapter) {
+        return Boolean(state.chapterRewards[chapter.id]);
+      }
+
+      function rewardBonusActive(bonus) {
+        return CHAPTERS.some((chapter) => chapter.reward && chapter.reward.bonus === bonus && chapterRewardUnlocked(chapter));
+      }
+
+      function latestPlayerTitle() {
+        const titles = CHAPTERS
+          .filter((chapter) => chapter.reward && chapter.reward.title && chapterRewardUnlocked(chapter))
+          .map((chapter) => chapter.reward.title);
+        return titles.length ? titles[titles.length - 1] : "见习飞行员";
+      }
+
+      function unlockChapterRewards(silent = false) {
+        const bestLevel = Math.max(state.level, state.records.level);
+        const unlocked = [];
+        CHAPTERS.forEach((chapter) => {
+          const reward = chapter.reward;
+          if (!reward || state.chapterRewards[chapter.id]) {
+            return;
+          }
+          if (bestLevel >= chapterRewardRequiredLevel(chapter)) {
+            state.chapterRewards[chapter.id] = true;
+            unlocked.push(reward);
+          }
+        });
+
+        if (!unlocked.length) {
+          return [];
+        }
+
+        saveChapterRewards();
+        ensureSelectedSkinUnlocked();
+        if (!silent) {
+          updateChapterMap();
+          updateChapterRewards();
+          const text = unlocked.map((reward) => reward.label).join("、");
+          showToast(`章节奖励：${text}`);
+          playFeedback("record");
+        }
+        return unlocked;
+      }
+
+      function skinUnlocked(skin) {
+        const rewardUnlocked = CHAPTERS.some((chapter) => chapter.reward && chapter.reward.skin === skin.id && chapterRewardUnlocked(chapter));
+        return !skin.unlock || Boolean(state.achievements[skin.unlock]) || rewardUnlocked;
+      }
+
+      function unlockedSkins() {
+        return SKINS.filter((skin) => skinUnlocked(skin));
+      }
+
+      function activeSkin() {
+        return SKINS.find((skin) => skin.id === state.skinId) || SKINS[0];
+      }
+
+      function ensureSelectedSkinUnlocked() {
+        const selected = activeSkin();
+        if (!skinUnlocked(selected)) {
+          state.skinId = "classic";
+          saveSkinPreference();
+        }
+      }
+
+      function cycleSkin() {
+        const available = unlockedSkins();
+        const currentIndex = Math.max(0, available.findIndex((skin) => skin.id === state.skinId));
+        const next = available[(currentIndex + 1) % available.length];
+        state.skinId = next.id;
+        saveSkinPreference();
+        updateHud();
+        showToast(`飞船皮肤：${next.label}`);
+      }
+
+      function cyclePlayer() {
+        saveActiveProfile();
+        const currentIndex = Math.max(0, state.players.findIndex((player) => player.id === state.activePlayerId));
+        const next = state.players[(currentIndex + 1) % state.players.length];
+        state.activePlayerId = next.id;
+        syncActiveProfileToState();
+        ensureSelectedSkinUnlocked();
+        saveActivePlayer();
+        resetGame(false);
+        updateHud();
+        updateProfileCard();
+        updateChapterMap();
+        updateChapterRewards();
+        updateAchievements();
+        updateProfileCard();
+        updateChapterMap();
+        updateChapterRewards();
+        updateLeaderboard();
+        updateRecentRuns();
+        showToast(`当前玩家：${next.name}`);
+      }
+
+      function addPlayer() {
+        const input = window.prompt("输入玩家名字，最多 8 个字", "");
+        const name = sanitizePlayerName(input);
+        if (!name) {
+          showToast("没有添加玩家");
+          return;
+        }
+
+        const existing = state.players.find((player) => player.name === name);
+        if (existing) {
+          saveActiveProfile();
+          state.activePlayerId = existing.id;
+          syncActiveProfileToState();
+          ensureSelectedSkinUnlocked();
+          saveActivePlayer();
+          resetGame(false);
+          updateHud();
+          updateProfileCard();
+          updateChapterMap();
+          updateChapterRewards();
+          updateAchievements();
+          updateLeaderboard();
+          updateRecentRuns();
+          showToast(`已切换到：${existing.name}`);
+          return;
+        }
+
+        const player = {
+          id: `player-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          name
+        };
+        state.players = [...state.players, player].slice(-8);
+        state.activePlayerId = player.id;
+        state.playerProfiles[player.id] = emptyProfile();
+        syncActiveProfileToState();
+        savePlayers();
+        saveActivePlayer();
+        resetGame(false);
+        updateHud();
+        updateProfileCard();
+        updateChapterMap();
+        updateChapterRewards();
+        updateAchievements();
+        updateLeaderboard();
+        updateRecentRuns();
+        showToast(`新玩家：${player.name}`);
+      }
+
+      function formatRunTime(timestamp) {
+        const date = new Date(timestamp);
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const hour = String(date.getHours()).padStart(2, "0");
+        const minute = String(date.getMinutes()).padStart(2, "0");
+        return `${month}/${day} ${hour}:${minute}`;
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      function addRecentRun() {
+        const player = activePlayer();
+        const run = {
+          score: state.score,
+          level: state.level,
+          planets: state.totalCollected,
+          reason: state.crashReason || "obstacle",
+          mode: state.dailyMode ? "每日" : DIFFICULTY_LABELS[state.difficulty],
+          playerId: player.id,
+          playerName: player.name,
+          at: Date.now()
+        };
+        state.recentRuns = [run, ...state.recentRuns].slice(0, 5);
+        saveRecentRuns();
+      }
+
+      function addLeaderboardRun() {
+        if (state.score <= 0) {
+          return;
+        }
+
+        const player = activePlayer();
+        const run = {
+          score: state.score,
+          level: state.level,
+          planets: state.totalCollected,
+          reason: state.crashReason || "obstacle",
+          mode: state.dailyMode ? "每日" : DIFFICULTY_LABELS[state.difficulty],
+          skin: activeSkin().label,
+          playerId: player.id,
+          playerName: player.name,
+          at: Date.now()
+        };
+
+        state.leaderboard = sortLeaderboardRuns([run, ...state.leaderboard]);
+        saveLeaderboard();
+      }
+
+      function sortLeaderboardRuns(runs) {
+        return (Array.isArray(runs) ? runs : [])
+          .sort((a, b) => {
+            const scoreDiff = (Number(b.score) || 0) - (Number(a.score) || 0);
+            if (scoreDiff) return scoreDiff;
+            const levelDiff = (Number(b.level) || 1) - (Number(a.level) || 1);
+            if (levelDiff) return levelDiff;
+            return (Number(b.planets) || 0) - (Number(a.planets) || 0);
+          })
+          .slice(0, 10);
+      }
+
+      function updateLeaderboard() {
+        if (!state.leaderboard.length) {
+          ui.leaderboardList.innerHTML = `<div class="recent-item empty">还没有排行榜成绩</div>`;
+          return;
+        }
+
+        ui.leaderboardList.innerHTML = state.leaderboard.map((run, index) => {
+          const reason = CRASH_REASON_LABELS[run.reason] || "任务结束";
+          const playerName = escapeHtml(run.playerName || DEFAULT_PLAYER.name);
+          const isActive = run.playerId === state.activePlayerId || (!run.playerId && activePlayer().id === DEFAULT_PLAYER.id);
+          return `<div class="recent-item${isActive ? " active-player" : ""}">
+            <span>#${index + 1} · ${playerName} · ${escapeHtml(run.mode || "普通")} · ${escapeHtml(run.skin || "探索者")} · ${reason}</span>
+            <strong>${Number(run.score) || 0} 分</strong>
+            <span>第 ${Number(run.level) || 1} 级 · ${Number(run.planets) || 0} 颗星球 · ${formatRunTime(run.at)}</span>
+          </div>`;
+        }).join("");
+      }
+
+      function updateRecentRuns() {
+        if (!state.recentRuns.length) {
+          ui.recentList.innerHTML = `<div class="recent-item empty">还没有完成的成绩</div>`;
+          return;
+        }
+
+        ui.recentList.innerHTML = state.recentRuns.map((run) => {
+          const reason = CRASH_REASON_LABELS[run.reason] || "任务结束";
+          const playerName = escapeHtml(run.playerName || DEFAULT_PLAYER.name);
+          const isActive = run.playerId === state.activePlayerId || (!run.playerId && activePlayer().id === DEFAULT_PLAYER.id);
+          return `<div class="recent-item${isActive ? " active-player" : ""}">
+            <span>${formatRunTime(run.at)} · ${playerName} · ${escapeHtml(run.mode || "普通")} · ${reason}</span>
+            <strong>${Number(run.score) || 0} 分</strong>
+            <span>第 ${Number(run.level) || 1} 级 · ${Number(run.planets) || 0} 颗星球</span>
+          </div>`;
+        }).join("");
       }
 
       function updateRecords() {
@@ -932,20 +2564,32 @@
         state.status = startRunning ? "running" : "ready";
         state.score = 0;
         state.level = 1;
-        state.missionCollected = 0;
         state.totalCollected = 0;
         state.newRecord = false;
-        state.shields = 1;
+        state.dailyNewRecord = false;
+        state.shields = effectiveInitialShields();
+        state.wallMode = state.defaultWallMode;
         state.warpTicks = 0;
+        state.magnetTicks = 0;
+        state.slowTicks = 0;
+        state.doubleTicks = 0;
+        state.completedMissionType = null;
+        state.crashReason = null;
+        state.levelSummary = null;
+        state.protectionUntil = state.newbieProtection ? performance.now() + 30000 : 0;
         state.direction = DIRECTIONS.right;
         state.nextDirection = DIRECTIONS.right;
         state.ship = initialShip();
+        state.planet = null;
         state.powerUp = null;
         state.obstacles = [];
         state.particles = [];
         state.flash = 0;
+        resetRunRandom();
         generateObstacles();
         state.planet = createPlanet();
+        resetMissionProgress();
+        startLevelTracking();
         lastMove = performance.now();
         updateHud();
         updateOverlay();
@@ -996,11 +2640,602 @@
         }
       }
 
+      function toggleLowDistraction() {
+        state.lowDistraction = !state.lowDistraction;
+        saveLowDistractionPreference();
+        if (state.lowDistraction) {
+          state.particles = [];
+          state.flash = 0;
+        }
+        updateHud();
+        showToast(state.lowDistraction ? "低干扰模式已开启" : "低干扰模式已关闭");
+      }
+
+      function adjustInitialShields(delta) {
+        state.initialShields = clamp(state.initialShields + delta, 1, SHIELD_MAX);
+        if (state.status === "ready") {
+          state.shields = effectiveInitialShields();
+        }
+        saveShieldPreference();
+        updateHud();
+        showToast(`初始护盾 ${state.initialShields}/${SHIELD_MAX}`);
+      }
+
+      function toggleTutorial() {
+        state.tutorialEnabled = !state.tutorialEnabled;
+        saveTutorialPreference();
+        updateHud();
+        showToast(state.tutorialEnabled ? "新手引导已开启" : "新手引导已关闭");
+      }
+
+      function toggleNewbieProtection() {
+        state.newbieProtection = !state.newbieProtection;
+        state.protectionUntil = state.newbieProtection && state.status !== "gameover" ? performance.now() + 30000 : 0;
+        saveNewbieProtectionPreference();
+        generateObstacles();
+        updateHud();
+        showToast(state.newbieProtection ? "新手保护已开启" : "新手保护已关闭");
+      }
+
+      function toggleDefaultWallMode() {
+        state.defaultWallMode = !state.defaultWallMode;
+        state.wallMode = state.defaultWallMode;
+        saveDefaultWallPreference();
+        updateHud();
+        showToast(state.defaultWallMode ? "默认穿墙已开启" : "默认穿墙已关闭");
+      }
+
+      function cycleMissionMode() {
+        if (state.dailyMode) {
+          showToast("每日挑战使用固定任务");
+          return;
+        }
+
+        const nextIndex = (MISSION_MODES.indexOf(state.missionMode) + 1) % MISSION_MODES.length;
+        state.missionMode = MISSION_MODES[nextIndex];
+        saveMissionModePreference();
+        state.mission = createMission();
+        state.missionProgress = 0;
+        state.missionCollected = 0;
+        updateHud();
+        updateOverlay();
+        showToast(`任务模式：${MISSION_MODE_LABELS[state.missionMode]}`);
+      }
+
+      function cycleDifficulty() {
+        const nextIndex = (DIFFICULTIES.indexOf(state.difficulty) + 1) % DIFFICULTIES.length;
+        state.difficulty = DIFFICULTIES[nextIndex];
+        saveDifficultyPreference();
+
+        if (state.dailyMode) {
+          resetGame(false);
+          showToast(`难度：${DIFFICULTY_LABELS[state.difficulty]}`);
+          return;
+        }
+
+        state.mission = createMission();
+        state.missionProgress = 0;
+        state.missionCollected = 0;
+        generateObstacles();
+        updateHud();
+        updateOverlay();
+        showToast(`难度：${DIFFICULTY_LABELS[state.difficulty]}`);
+      }
+
+      function toggleDailyMode() {
+        state.dailyMode = !state.dailyMode;
+        saveDailyModePreference();
+        resetGame(false);
+        showToast(state.dailyMode ? `每日挑战已开启：${state.dailyChallenge.label}` : "每日挑战已关闭");
+      }
+
+      function unlockAchievement(id, silent = false) {
+        if (state.achievements[id]) {
+          return false;
+        }
+
+        state.achievements[id] = true;
+        saveAchievements();
+        if (!silent) {
+          updateAchievements();
+          const achievement = ACHIEVEMENTS.find((item) => item.id === id);
+          showToast(`成就解锁：${achievement.title}`);
+          playFeedback("record");
+        }
+        return true;
+      }
+
+      function migrateAchievementsFromRecords() {
+        let changed = false;
+        if (state.records.planets >= 1) changed = unlockAchievement("first_planet", true) || changed;
+        if (state.records.level >= 3) changed = unlockAchievement("level_3", true) || changed;
+        if (state.records.level >= 5) changed = unlockAchievement("level_5", true) || changed;
+        if (state.records.planets >= 20) changed = unlockAchievement("planet_20", true) || changed;
+        if (changed) {
+          updateAchievements();
+        }
+      }
+
+      function checkAchievements() {
+        const bestLevel = Math.max(state.level, state.records.level);
+        const bestPlanets = Math.max(state.totalCollected, state.records.planets);
+        if (bestPlanets >= 1) unlockAchievement("first_planet");
+        if (bestLevel >= 3) unlockAchievement("level_3");
+        if (bestLevel >= 5) unlockAchievement("level_5");
+        if (bestPlanets >= 20) unlockAchievement("planet_20");
+        if (state.completedMissionType === "clean") unlockAchievement("clean_clear");
+        if (state.completedMissionType === "wall") unlockAchievement("wall_clear");
+        unlockChapterRewards();
+      }
+
+      function achievementProgress(id) {
+        const bestLevel = Math.max(state.level, state.records.level);
+        const bestPlanets = Math.max(state.totalCollected, state.records.planets);
+
+        if (id === "first_planet") return { current: Math.min(bestPlanets, 1), target: 1 };
+        if (id === "level_3") return { current: Math.min(bestLevel, 3), target: 3 };
+        if (id === "level_5") return { current: Math.min(bestLevel, 5), target: 5 };
+        if (id === "planet_20") return { current: Math.min(bestPlanets, 20), target: 20 };
+        if (id === "clean_clear") return { current: state.achievements.clean_clear ? 1 : 0, target: 1 };
+        if (id === "wall_clear") return { current: state.achievements.wall_clear ? 1 : 0, target: 1 };
+        return { current: 0, target: 1 };
+      }
+
+      function updateAchievements() {
+        ui.achievementList.innerHTML = ACHIEVEMENTS.map((achievement) => {
+          const unlocked = Boolean(state.achievements[achievement.id]);
+          const progress = achievementProgress(achievement.id);
+          const percent = unlocked ? 100 : clamp((progress.current / progress.target) * 100, 0, 100);
+          return `<div class="achievement-item${unlocked ? " unlocked" : ""}">
+            <div class="achievement-info">
+              <span class="achievement-title">${achievement.title}：${achievement.text}</span>
+              <div class="achievement-progress">
+                <div class="achievement-meter" aria-hidden="true"><span style="width: ${percent}%"></span></div>
+                <span>${unlocked ? progress.target : progress.current}/${progress.target}</span>
+              </div>
+            </div>
+            <strong class="achievement-badge">${unlocked ? "已解锁" : "未解锁"}</strong>
+          </div>`;
+        }).join("");
+      }
+
+      function updateProfileCard() {
+        const player = activePlayer();
+        const chapter = activeChapter(state.records.level);
+        const rewardCount = CHAPTERS.filter((item) => chapterRewardUnlocked(item)).length;
+        ui.profileCard.innerHTML = `
+          <div class="profile-stat">
+            <span>玩家</span>
+            <strong>${escapeHtml(player.name)}</strong>
+          </div>
+          <div class="profile-stat">
+            <span>称号</span>
+            <strong>${escapeHtml(latestPlayerTitle())}</strong>
+          </div>
+          <div class="profile-stat">
+            <span>最高分</span>
+            <strong>${state.records.score} 分</strong>
+          </div>
+          <div class="profile-stat">
+            <span>最高星域</span>
+            <strong>${escapeHtml(chapter.short)} · ${state.records.level} 级</strong>
+          </div>
+          <div class="profile-stat">
+            <span>收集星球</span>
+            <strong>${state.records.planets} 颗</strong>
+          </div>
+          <div class="profile-stat">
+            <span>章节奖励</span>
+            <strong>${rewardCount}/${CHAPTERS.length}</strong>
+          </div>`;
+      }
+
+      function updateChapterMap() {
+        const bestLevel = Math.max(1, state.records.level, state.level);
+        ui.chapterMapList.innerHTML = CHAPTERS.map((chapter) => {
+          const required = chapterRewardRequiredLevel(chapter);
+          const upcoming = nextChapter(chapter.minLevel);
+          const current = bestLevel >= chapter.minLevel && (!upcoming || bestLevel < upcoming.minLevel);
+          const completed = bestLevel >= required;
+          const locked = bestLevel < chapter.minLevel;
+          const status = completed ? "已完成" : current ? "探索中" : `第 ${chapter.minLevel} 级`;
+          const reward = chapter.reward ? `${chapter.reward.type} · ${chapter.reward.label}` : "无奖励";
+          const className = completed ? "completed" : current ? "current" : "locked";
+          return `<div class="chapter-card ${className}" style="color: ${chapter.accent}">
+            <div class="chapter-orbit" aria-hidden="true"></div>
+            <div class="chapter-info">
+              <strong>${escapeHtml(chapter.title)} · ${chapter.range}</strong>
+              <span>${escapeHtml(chapter.story)}</span>
+              <span>奖励：${escapeHtml(reward)}</span>
+            </div>
+            <span class="chapter-badge">${locked ? "未解锁" : status}</span>
+          </div>`;
+        }).join("");
+      }
+
+      function updateChapterRewards() {
+        ui.chapterRewardList.innerHTML = CHAPTERS.map((chapter) => {
+          const reward = chapter.reward;
+          const unlocked = chapterRewardUnlocked(chapter);
+          const required = chapterRewardRequiredLevel(chapter);
+          return `<div class="reward-item${unlocked ? " unlocked" : ""}">
+            <strong>${escapeHtml(reward.label)} · ${escapeHtml(reward.type)}</strong>
+            <span class="reward-badge">${unlocked ? "已获得" : `第 ${required} 级`}</span>
+            <span>${escapeHtml(reward.description)}</span>
+          </div>`;
+        }).join("");
+      }
+
+      function sharePayload() {
+        const dailyRecord = currentDailyRecord();
+        const modeText = state.dailyMode ? `${state.dailyChallenge.label}每日挑战` : "星际任务";
+        const player = activePlayer();
+        let text = SHARE_TEXT;
+
+        if (state.score > 0) {
+          text = `${player.name}在${modeText}拿到 ${state.score} 分，到达${activeChapter().title}第 ${state.level} 级，收集 ${state.totalCollected} 颗星球。`;
+        } else if (state.dailyMode && dailyRecord.score > 0) {
+          text = `${player.name}今天在每日挑战拿到 ${dailyRecord.score} 分，到达第 ${dailyRecord.level} 级，收集 ${dailyRecord.planets} 颗星球。`;
+        } else if (state.records.score > 0) {
+          text = `${player.name}的本机最高分是 ${state.records.score}，最高到达第 ${state.records.level} 级星域。`;
+        }
+
+        return {
+          title: SHARE_TITLE,
+          text,
+          url: SHARE_URL
+        };
+      }
+
+      async function copyShareLink() {
+        const payload = sharePayload();
+        const shareMessage = `${payload.title}\n${payload.text}\n${payload.url}`;
+
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(shareMessage);
+            return true;
+          }
+        } catch (error) {
+          // Fall through to the selection-based copy fallback.
+        }
+
+        const field = document.createElement("textarea");
+        field.value = shareMessage;
+        field.setAttribute("readonly", "");
+        field.style.position = "fixed";
+        field.style.left = "-9999px";
+        field.style.top = "0";
+        document.body.appendChild(field);
+        field.select();
+
+        try {
+          return document.execCommand("copy");
+        } catch (error) {
+          return false;
+        } finally {
+          document.body.removeChild(field);
+        }
+      }
+
+      async function shareGame() {
+        const payload = sharePayload();
+
+        if (navigator.share) {
+          try {
+            await navigator.share(payload);
+            showToast("分享面板已打开");
+            return;
+          } catch (error) {
+            if (error && error.name === "AbortError") {
+              return;
+            }
+            // Clipboard fallback covers browsers without complete share support.
+          }
+        }
+
+        const copied = await copyShareLink();
+        showToast(copied ? "链接已复制，可发到微信" : "复制失败，请打开 Pages 链接分享");
+      }
+
+      function isStandaloneApp() {
+        return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+      }
+
+      function canUsePwaFeatures() {
+        return location.protocol === "https:" || ["localhost", "127.0.0.1", "::1"].includes(location.hostname);
+      }
+
+      function installButtonText() {
+        if (isStandaloneApp()) {
+          return "已安装";
+        }
+        if (deferredInstallPrompt) {
+          return "安装";
+        }
+        if (canUsePwaFeatures()) {
+          return "可离线";
+        }
+        return "发布后可装";
+      }
+
+      async function installApp() {
+        if (isStandaloneApp()) {
+          showToast("已经是安装版");
+          return;
+        }
+
+        if (!deferredInstallPrompt) {
+          const hint = canUsePwaFeatures()
+            ? "可用浏览器菜单添加到桌面"
+            : "发布到 GitHub Pages 后可安装";
+          showToast(hint);
+          return;
+        }
+
+        deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        updateHud();
+        showToast(choice.outcome === "accepted" ? "安装已开始" : "已取消安装");
+      }
+
+      function registerServiceWorker() {
+        if (!("serviceWorker" in navigator) || !canUsePwaFeatures()) {
+          return;
+        }
+
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("sw.js").catch(() => {
+            // Offline support is optional; the game remains playable online.
+          });
+        });
+      }
+
+      function drawPosterShip(pctx, x, y, scale) {
+        const skin = activeSkin().colors;
+        pctx.save();
+        pctx.translate(x, y);
+        pctx.scale(scale, scale);
+        pctx.shadowColor = skin.glow;
+        pctx.shadowBlur = 24;
+
+        pctx.fillStyle = skin.flameA;
+        pctx.beginPath();
+        pctx.moveTo(-120, 0);
+        pctx.lineTo(-48, -28);
+        pctx.lineTo(-48, 28);
+        pctx.closePath();
+        pctx.fill();
+
+        pctx.fillStyle = skin.hull;
+        roundRectFor(pctx, -62, -38, 118, 76, 26);
+        pctx.fill();
+
+        pctx.fillStyle = skin.nose;
+        pctx.beginPath();
+        pctx.moveTo(104, 0);
+        pctx.lineTo(42, -48);
+        pctx.lineTo(42, 48);
+        pctx.closePath();
+        pctx.fill();
+
+        pctx.fillStyle = skin.wing;
+        pctx.beginPath();
+        pctx.moveTo(-18, -36);
+        pctx.lineTo(-78, -82);
+        pctx.lineTo(-48, -22);
+        pctx.closePath();
+        pctx.fill();
+        pctx.beginPath();
+        pctx.moveTo(-18, 36);
+        pctx.lineTo(-78, 82);
+        pctx.lineTo(-48, 22);
+        pctx.closePath();
+        pctx.fill();
+
+        pctx.shadowBlur = 0;
+        pctx.fillStyle = "#071026";
+        pctx.beginPath();
+        pctx.arc(2, 0, 21, 0, Math.PI * 2);
+        pctx.fill();
+        pctx.fillStyle = skin.window;
+        pctx.beginPath();
+        pctx.arc(8, -5, 10, 0, Math.PI * 2);
+        pctx.fill();
+        pctx.restore();
+      }
+
+      function roundRectFor(target, x, y, width, height, radius) {
+        const r = Math.min(radius, width / 2, height / 2);
+        target.beginPath();
+        target.moveTo(x + r, y);
+        target.lineTo(x + width - r, y);
+        target.quadraticCurveTo(x + width, y, x + width, y + r);
+        target.lineTo(x + width, y + height - r);
+        target.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+        target.lineTo(x + r, y + height);
+        target.quadraticCurveTo(x, y + height, x, y + height - r);
+        target.lineTo(x, y + r);
+        target.quadraticCurveTo(x, y, x + r, y);
+        target.closePath();
+      }
+
+      function drawPosterStat(pctx, label, value, x, y, width) {
+        pctx.fillStyle = "rgba(143, 199, 255, 0.14)";
+        roundRectFor(pctx, x, y, width, 92, 18);
+        pctx.fill();
+        pctx.fillStyle = "#a9bad8";
+        pctx.font = "700 22px system-ui, sans-serif";
+        pctx.fillText(label, x + 24, y + 32);
+        pctx.fillStyle = "#f4fbff";
+        pctx.font = "900 38px system-ui, sans-serif";
+        pctx.fillText(value, x + 24, y + 73);
+      }
+
+      function generatePosterDataUrl() {
+        const posterCanvas = document.createElement("canvas");
+        const pctx = posterCanvas.getContext("2d");
+        const width = 900;
+        const height = 1200;
+        posterCanvas.width = width;
+        posterCanvas.height = height;
+
+        const skin = activeSkin();
+        const player = activePlayer();
+        const chapter = activeChapter();
+        const reason = state.crashReason ? CRASH_REASON_LABELS[state.crashReason] : "任务完成";
+        const mode = state.dailyMode ? `${state.dailyChallenge.label}每日挑战` : DIFFICULTY_LABELS[state.difficulty];
+        const recordText = state.dailyMode && state.dailyNewRecord ? "今日新纪录" : state.newRecord ? "新纪录" : "本次成绩";
+
+        const gradient = pctx.createLinearGradient(0, 0, width, height);
+        gradient.addColorStop(0, "#050818");
+        gradient.addColorStop(0.55, "#0b1230");
+        gradient.addColorStop(1, "#141d45");
+        pctx.fillStyle = gradient;
+        pctx.fillRect(0, 0, width, height);
+
+        pctx.fillStyle = "rgba(97, 242, 213, 0.1)";
+        pctx.beginPath();
+        pctx.arc(130, 160, 190, 0, Math.PI * 2);
+        pctx.fill();
+        pctx.fillStyle = "rgba(255, 209, 102, 0.09)";
+        pctx.beginPath();
+        pctx.arc(770, 980, 240, 0, Math.PI * 2);
+        pctx.fill();
+
+        pctx.fillStyle = "#61f2d5";
+        pctx.font = "900 34px system-ui, sans-serif";
+        pctx.fillText("星际飞船贪吃蛇", 64, 86);
+        pctx.fillStyle = "#a9bad8";
+        pctx.font = "700 24px system-ui, sans-serif";
+        pctx.fillText(`${player.name} · ${chapter.title} · ${mode} · ${recordText}`, 64, 128);
+
+        drawPosterShip(pctx, 450, 260, 1.35);
+
+        pctx.fillStyle = "#f4fbff";
+        pctx.font = "900 118px system-ui, sans-serif";
+        pctx.textAlign = "center";
+        pctx.fillText(String(state.score), 450, 510);
+        pctx.font = "800 28px system-ui, sans-serif";
+        pctx.fillStyle = "#ffd166";
+        pctx.fillText("分", 450, 555);
+        pctx.textAlign = "start";
+
+        drawPosterStat(pctx, "等级", `第 ${state.level} 级`, 64, 620, 360);
+        drawPosterStat(pctx, "星球", `${state.totalCollected} 颗`, 476, 620, 360);
+        drawPosterStat(pctx, "皮肤", skin.label, 64, 740, 360);
+        drawPosterStat(pctx, "护盾", `${state.shields}/${SHIELD_MAX}`, 476, 740, 360);
+
+        pctx.fillStyle = "rgba(255, 107, 122, 0.13)";
+        roundRectFor(pctx, 64, 880, 772, 86, 18);
+        pctx.fill();
+        pctx.fillStyle = "#ffb4bd";
+        pctx.font = "800 28px system-ui, sans-serif";
+        pctx.fillText(`失败原因：${reason}`, 88, 934);
+
+        pctx.fillStyle = "#a9bad8";
+        pctx.font = "700 24px system-ui, sans-serif";
+        pctx.fillText(`最高分 ${state.records.score} · 最高等级 ${state.records.level}`, 64, 1038);
+        pctx.fillStyle = "#61f2d5";
+        pctx.font = "900 26px system-ui, sans-serif";
+        pctx.fillText("wxj221217.github.io/space-snake", 64, 1090);
+
+        pctx.fillStyle = "rgba(255, 255, 255, 0.18)";
+        for (let i = 0; i < 42; i += 1) {
+          const x = 64 + (i * 73) % 772;
+          const y = 170 + (i * 137) % 870;
+          pctx.beginPath();
+          pctx.arc(x, y, i % 4 === 0 ? 3 : 2, 0, Math.PI * 2);
+          pctx.fill();
+        }
+
+        return posterCanvas.toDataURL("image/png");
+      }
+
+      function openPoster() {
+        posterDataUrl = generatePosterDataUrl();
+        ui.posterImage.src = posterDataUrl;
+        ui.posterPanel.hidden = false;
+        showToast("成绩海报已生成");
+      }
+
+      function closePoster() {
+        ui.posterPanel.hidden = true;
+      }
+
+      function dataUrlToBlob(dataUrl) {
+        const [header, data] = dataUrl.split(",");
+        const mime = header.match(/:(.*?);/)[1];
+        const binary = window.atob(data);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i += 1) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        return new Blob([bytes], { type: mime });
+      }
+
+      async function sharePoster() {
+        if (!posterDataUrl) {
+          openPoster();
+        }
+
+        if (typeof File === "function" && navigator.canShare && navigator.share) {
+          const blob = dataUrlToBlob(posterDataUrl);
+          const file = new File([blob], "space-snake-score.png", { type: "image/png" });
+          let canShareFiles = false;
+          try {
+            canShareFiles = navigator.canShare({ files: [file] });
+          } catch (error) {
+            canShareFiles = false;
+          }
+          if (!canShareFiles) {
+            await shareGame();
+            return;
+          }
+
+          try {
+            await navigator.share({ title: SHARE_TITLE, text: sharePayload().text, files: [file] });
+            showToast("分享面板已打开");
+            return;
+          } catch (error) {
+            if (error && error.name === "AbortError") {
+              return;
+            }
+          }
+        }
+
+        await shareGame();
+      }
+
+      function downloadPoster() {
+        if (!posterDataUrl) {
+          openPoster();
+        }
+
+        const link = document.createElement("a");
+        link.href = posterDataUrl;
+        link.download = "space-snake-score.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      function tutorialText() {
+        return "滑动或点方向键驾驶飞船。收集星球完成任务，护盾能救你一次，设置里可以调护盾和任务模式。";
+      }
+
       function openRules() {
         if (state.status === "running" || state.status === "launching") {
           togglePause();
         }
 
+        updateAchievements();
+        updateProfileCard();
+        updateChapterMap();
+        updateChapterRewards();
+        updateLeaderboard();
+        updateRecentRuns();
         ui.rulesPanel.hidden = false;
       }
 
@@ -1157,8 +3392,8 @@
         // Retry random placement to avoid spawning planets or powerups on hazards.
         for (let i = 0; i < 800; i += 1) {
           const cell = {
-            x: Math.floor(Math.random() * COLS),
-            y: Math.floor(Math.random() * ROWS)
+            x: Math.floor(gameRandom() * COLS),
+            y: Math.floor(gameRandom() * ROWS)
           };
 
           if (cellOccupied(cell, options)) {
@@ -1183,27 +3418,32 @@
         const cell = randomEmptyCell({ ignorePlanet: true, safeFromHead: 4 });
         return {
           ...cell,
-          hue: Math.floor(165 + Math.random() * 190),
-          ring: Math.random() > 0.45,
-          seed: Math.random() * 1000
+          hue: Math.floor(165 + gameRandom() * 190),
+          ring: gameRandom() > 0.45,
+          seed: gameRandom() * 1000
         };
       }
 
       function generateObstacles() {
         state.obstacles = [];
-        const count = Math.min(9, Math.max(0, state.level - 1 + Math.floor(state.level / 3)));
+        const config = DIFFICULTY_CONFIG[state.difficulty];
+        const chapter = activeChapter();
+        let count = Math.min(14, Math.max(0, state.level - 1 + Math.floor(state.level / 3) + config.obstacleBonus + chapter.obstacleBonus));
+        if (newbieProtectionWindowActive()) {
+          count = Math.max(0, count - 2);
+        }
 
         for (let i = 0; i < count; i += 1) {
           const cell = randomEmptyCell({
             ignoreObstacles: false,
-            ignorePlanet: true,
-            ignorePowerUp: true,
+            ignorePlanet: false,
+            ignorePowerUp: false,
             safeFromHead: 5
           });
           state.obstacles.push({
             ...cell,
-            seed: Math.random() * 1000,
-            tint: Math.random() > 0.5 ? "#8b9bb4" : "#776b91"
+            seed: gameRandom() * 1000,
+            tint: gameRandom() > 0.5 ? "#f06d3a" : "#d94f70"
           });
         }
       }
@@ -1213,17 +3453,28 @@
           return;
         }
 
-        const shouldSpawn = state.totalCollected % 4 === 0 || Math.random() < 0.18;
+        const shouldSpawn = state.totalCollected % 4 === 0 || gameRandom() < 0.22;
         if (!shouldSpawn) {
           return;
         }
 
-        const type = state.totalCollected % 8 === 0 ? "warp" : "shield";
+        const type = choosePowerUpType();
         state.powerUp = {
           ...randomEmptyCell({ safeFromHead: 3 }),
           type,
           ttl: 70
         };
+      }
+
+      function choosePowerUpType() {
+        if (state.totalCollected % 12 === 0) return "clear";
+        if (state.totalCollected % 10 === 0) return "double";
+        if (state.totalCollected % 8 === 0) return "warp";
+        if (state.totalCollected % 6 === 0) return "magnet";
+        if (state.totalCollected % 5 === 0) return "slow";
+
+        const pool = ["shield", "shield", "warp", "magnet", "slow", "double"];
+        return pool[Math.floor(gameRandom() * pool.length)];
       }
 
       function collectPowerUp() {
@@ -1232,19 +3483,62 @@
         }
 
         const type = state.powerUp.type;
+        const meta = POWER_UPS[type] || POWER_UPS.shield;
         if (type === "shield") {
           state.shields = Math.min(SHIELD_MAX, state.shields + 1);
-          state.score += 40;
-          showToast("获得能量护盾");
-        } else {
-          state.warpTicks = 18;
-          state.score += 60;
-          showToast("曲速推进已启动");
+          state.score += meta.score;
+        } else if (type === "warp") {
+          state.warpTicks = rewardBonusActive("warp_plus") ? 20 : 18;
+          state.score += meta.score;
+        } else if (type === "magnet") {
+          state.magnetTicks = 22;
+          state.score += meta.score;
+        } else if (type === "slow") {
+          state.slowTicks = 26;
+          state.score += meta.score;
+        } else if (type === "clear") {
+          const cleared = state.obstacles.length;
+          state.obstacles = [];
+          state.score += meta.score + cleared * 25;
+        } else if (type === "double") {
+          state.doubleTicks = rewardBonusActive("double_plus") ? 28 : 24;
+          state.score += meta.score;
         }
 
+        showToast(meta.label);
         playFeedback("power");
-        burstAtCell(state.powerUp, type === "shield" ? ["#61f2d5", "#8fc7ff"] : ["#ffd166", "#ff7ab6"], 18);
+        burstAtCell(state.powerUp, meta.colors, 18);
         state.powerUp = null;
+      }
+
+      function pullPlanetTowardShip() {
+        if (!state.planet || state.magnetTicks <= 0) {
+          return;
+        }
+
+        const head = state.ship[0];
+        const dx = head.x - state.planet.x;
+        const dy = head.y - state.planet.y;
+        const distance = Math.abs(dx) + Math.abs(dy);
+        if (distance <= 1 || distance > 6) {
+          return;
+        }
+
+        const steps = Math.abs(dx) >= Math.abs(dy)
+          ? [{ x: Math.sign(dx), y: 0 }, { x: 0, y: Math.sign(dy) }]
+          : [{ x: 0, y: Math.sign(dy) }, { x: Math.sign(dx), y: 0 }];
+
+        for (const step of steps) {
+          if (step.x === 0 && step.y === 0) {
+            continue;
+          }
+
+          const next = { x: state.planet.x + step.x, y: state.planet.y + step.y };
+          if (inBounds(next) && !cellOccupied(next, { ignorePlanet: true })) {
+            state.planet = { ...state.planet, ...next };
+            return;
+          }
+        }
       }
 
       function moveShip() {
@@ -1264,18 +3558,25 @@
         const hitObstacle = state.obstacles.some((rock) => sameCell(rock, next));
 
         if (hitWall || hitSelf || hitObstacle) {
-          resolveCrash(next);
+          const reason = hitWall ? "wall" : hitSelf ? "self" : "obstacle";
+          resolveCrash(next, reason);
           return;
         }
 
         state.ship.unshift(next);
 
         if (willGrow) {
-          const bonus = state.warpTicks > 0 ? 1.5 : 1;
+          const bonus = (state.warpTicks > 0 ? 1.5 : 1) * (state.doubleTicks > 0 ? 2 : 1);
           state.score += Math.round((100 + state.level * 20) * bonus);
-          state.missionCollected += 1;
           state.totalCollected += 1;
+          if (state.mission.type === "collect" || state.mission.type === "clean" || state.mission.type === "wall") {
+            if (state.mission.type !== "wall" || state.wallMode) {
+              state.missionProgress += 1;
+            }
+          }
+          state.missionCollected = state.missionProgress;
           playFeedback("collect");
+          checkAchievements();
           burstAtCell(next, ["#ffd166", "#61f2d5", "#ffffff"], 24);
           state.planet = createPlanet();
           maybeSpawnPowerUp();
@@ -1291,6 +3592,19 @@
           state.warpTicks -= 1;
         }
 
+        if (state.magnetTicks > 0) {
+          state.magnetTicks -= 1;
+          pullPlanetTowardShip();
+        }
+
+        if (state.slowTicks > 0) {
+          state.slowTicks -= 1;
+        }
+
+        if (state.doubleTicks > 0) {
+          state.doubleTicks -= 1;
+        }
+
         if (state.powerUp) {
           state.powerUp.ttl -= 1;
           if (state.powerUp.ttl <= 0) {
@@ -1298,34 +3612,55 @@
           }
         }
 
-        if (state.missionCollected >= missionTarget()) {
+        if (missionComplete()) {
           advanceLevel();
         }
 
         updateHud();
       }
 
-      function resolveCrash(cell) {
+      function resolveCrash(cell, reason = "obstacle") {
+        state.crashReason = reason;
+        const reasonText = CRASH_REASON_LABELS[reason] || "发生碰撞";
         burstAtCell(inBounds(cell) ? cell : state.ship[0], ["#ff6b7a", "#ffd166", "#ffffff"], 32);
+
+        if (newbieProtectionActive()) {
+          emergencyWarp();
+          updateHud();
+          playFeedback("shield");
+          beginLaunchDelay(`${reasonText}，新手保护启动，1 秒后重新出发`);
+          return;
+        }
 
         if (state.shields > 0) {
           // Shields prevent game over, relocate the ship, and resume after a delay.
           state.shields -= 1;
+          if (state.mission && state.mission.type === "clean") {
+            state.missionProgress = 0;
+            state.missionCollected = 0;
+            showToast("无伤任务重置，1 秒后重新出发");
+          }
           emergencyWarp();
           updateHud();
           playFeedback("shield");
-          beginLaunchDelay("消耗 1 层护盾，1 秒后重新出发");
+          beginLaunchDelay(`${reasonText}，消耗 1 层护盾，1 秒后重新出发`);
           return;
         }
 
         const isNewRecord = updateRecords();
+        const isNewDailyRecord = updateDailyRecord();
+        addRecentRun();
+        addLeaderboardRun();
         state.status = "gameover";
+        checkAchievements();
         updateOverlay();
         updateHud();
-        if (isNewRecord) {
+        if (isNewDailyRecord) {
+          showToast("今日新纪录！");
+        } else if (isNewRecord) {
           showToast("新纪录！");
         }
-        playFeedback(isNewRecord ? "record" : "gameover");
+        playFeedback(isNewRecord || isNewDailyRecord ? "record" : "gameover");
       }
 
       function emergencyWarp() {
@@ -1373,17 +3708,26 @@
 
       function advanceLevel() {
         // Level transitions briefly show feedback, then reuse the launch delay.
+        state.completedMissionType = state.mission ? state.mission.type : null;
+        state.levelSummary = createLevelSummary();
         state.level += 1;
-        state.missionCollected = 0;
         state.shields = Math.min(SHIELD_MAX, state.shields + 1);
         state.warpTicks = 0;
+        state.powerUp = null;
+        state.planet = null;
         generateObstacles();
         state.planet = createPlanet();
-        state.powerUp = null;
+        resetMissionProgress();
+        startLevelTracking();
         state.status = "levelup";
         levelToken += 1;
         const token = levelToken;
         playFeedback("level");
+        const chapterRewards = unlockChapterRewards();
+        if (chapterRewards.length) {
+          state.levelSummary.reward = `护盾 +1，${chapterRewards.map((reward) => reward.label).join("、")}`;
+        }
+        checkAchievements();
         burstAtCell(state.ship[0], ["#61f2d5", "#8fc7ff", "#ffd166"], 42);
         updateHud();
         updateOverlay();
@@ -1420,14 +3764,44 @@
       }
 
       function updateHud() {
-        const target = missionTarget();
+        syncDailyChallenge();
+        const mission = state.mission || createMission();
+        const target = mission.target;
+        const dailyRecord = currentDailyRecord();
+        const skin = activeSkin();
+        const chapter = activeChapter();
+        const player = activePlayer();
         ui.score.textContent = String(state.score);
         ui.bestScore.textContent = String(state.records.score);
         ui.level.textContent = String(state.level);
-        ui.mission.textContent = `${state.missionCollected}/${target}`;
-        ui.missionBar.style.width = `${clamp((state.missionCollected / target) * 100, 0, 100)}%`;
-        ui.power.textContent = state.warpTicks > 0 ? `曲速中 ${state.shields}/${SHIELD_MAX}` : `护盾 ${state.shields}/${SHIELD_MAX}`;
+        ui.chapter.textContent = chapter.short;
+        ui.missionLabel.textContent = mission.title;
+        ui.mission.textContent = `${state.missionProgress}/${target}`;
+        ui.missionBar.style.width = `${clamp((state.missionProgress / target) * 100, 0, 100)}%`;
+        ui.power.textContent = activePowerText();
         ui.status.textContent = statusLabel();
+        ui.shieldConfig.textContent = rewardBonusActive("shield_start")
+          ? `${state.initialShields}+1/${SHIELD_MAX}`
+          : `${state.initialShields}/${SHIELD_MAX}`;
+        ui.playerButton.textContent = player.name;
+        ui.installButton.textContent = installButtonText();
+        ui.chapterLabel.textContent = `当前星域 ${chapter.range}`;
+        ui.chapterDetail.textContent = chapter.title;
+        ui.missionModeButton.textContent = state.dailyMode ? "每日固定" : MISSION_MODE_LABELS[state.missionMode];
+        ui.difficultyButton.textContent = DIFFICULTY_LABELS[state.difficulty];
+        ui.skinButton.textContent = skin.label;
+        ui.calmButton.textContent = state.lowDistraction ? "开启" : "关闭";
+        ui.calmButton.setAttribute("aria-pressed", String(state.lowDistraction));
+        ui.dailyButton.textContent = state.dailyMode ? "开启" : "关闭";
+        ui.dailyButton.setAttribute("aria-pressed", String(state.dailyMode));
+        ui.dailyLabel.textContent = `今日最佳 ${state.dailyChallenge.code}`;
+        ui.dailyBest.textContent = `${dailyRecord.score} 分`;
+        ui.tutorialButton.textContent = state.tutorialEnabled ? "开启" : "关闭";
+        ui.tutorialButton.setAttribute("aria-pressed", String(state.tutorialEnabled));
+        ui.newbieButton.textContent = state.newbieProtection ? "开启" : "关闭";
+        ui.newbieButton.setAttribute("aria-pressed", String(state.newbieProtection));
+        ui.defaultWallButton.textContent = state.defaultWallMode ? "开启" : "关闭";
+        ui.defaultWallButton.setAttribute("aria-pressed", String(state.defaultWallMode));
         ui.wallButton.textContent = state.wallMode ? "穿墙开" : "穿墙关";
         ui.wallButton.setAttribute("aria-pressed", String(state.wallMode));
         ui.soundButton.textContent = state.soundEnabled ? "音效开" : "音效关";
@@ -1437,6 +3811,7 @@
       }
 
       function updateOverlay() {
+        ui.posterButton.hidden = true;
         if (state.status === "running" || state.status === "launching") {
           ui.overlay.hidden = true;
           return;
@@ -1446,29 +3821,45 @@
 
         if (state.status === "paused") {
           ui.overlayTitle.textContent = "任务暂停";
-          ui.overlayText.textContent = `当前分数 ${state.score}，飞船保持在第 ${state.level} 级星域。`;
+          ui.overlayText.textContent = `${activePlayer().name} 当前分数 ${state.score}，飞船停在${chapterProgressText()}。`;
           ui.overlayButton.textContent = "继续任务";
           return;
         }
 
         if (state.status === "levelup") {
-          ui.overlayTitle.textContent = `进入第 ${state.level} 级星域`;
-          ui.overlayText.textContent = "护盾补给完成，小行星带正在靠近。";
+          const summary = state.levelSummary;
+          ui.overlayTitle.textContent = summary ? `第 ${summary.level} 级完成` : `进入第 ${state.level} 级星域`;
+          ui.overlayText.textContent = summary
+            ? `${summary.chapter} · ${summary.missionTitle}完成！用时 ${summary.seconds}s，收集 ${summary.planets} 颗，得分 +${summary.score}，剩余护盾 ${summary.shields}/${SHIELD_MAX}，奖励 ${summary.reward}。${summary.nextChapter ? `下一站：${summary.nextChapter}。` : ""}`
+            : `${state.mission.description}。护盾补给完成。`;
           ui.overlayButton.textContent = "准备好了";
           return;
         }
 
         if (state.status === "gameover") {
+          const reasonText = state.crashReason ? `失败原因：${CRASH_REASON_LABELS[state.crashReason]}。` : "";
           ui.overlayTitle.textContent = "飞船返航";
-          ui.overlayText.textContent = state.newRecord
-            ? `新纪录！本次得分 ${state.score}，最高等级 ${state.records.level}。`
-            : `本次得分 ${state.score}，最高分 ${state.records.score}。`;
+          const playerText = `${activePlayer().name} · ${activeChapter().title}。`;
+          ui.overlayText.textContent = state.dailyMode && state.dailyNewRecord
+            ? `${playerText}${reasonText}今日新纪录！本次得分 ${state.score}，收集 ${state.totalCollected} 颗星球。`
+            : state.newRecord
+            ? `${playerText}${reasonText}新纪录！本次得分 ${state.score}，最高等级 ${state.records.level}。`
+            : `${playerText}${reasonText}本次得分 ${state.score}，最高分 ${state.records.score}。`;
           ui.overlayButton.textContent = "再来一次";
+          ui.posterButton.hidden = false;
           return;
         }
 
         ui.overlayTitle.textContent = "太空任务待命";
-        ui.overlayText.textContent = `收集 ${missionTarget()} 颗星球，飞船就能进入下一片星域。`;
+        const chapterIntro = `${activePlayer().name} · ${chapterProgressText()}。${activeChapter().story}`;
+        if (state.dailyMode) {
+          const dailyIntro = `${state.dailyChallenge.label}每日挑战，编号 ${state.dailyChallenge.code}。`;
+          ui.overlayText.textContent = state.tutorialEnabled
+            ? `${chapterIntro}${dailyIntro}${tutorialText()}`
+            : `${chapterIntro}${dailyIntro}${(state.mission || createMission()).description}，完成后进入下一片星域。`;
+        } else {
+          ui.overlayText.textContent = state.tutorialEnabled ? `${chapterIntro}${tutorialText()}` : `${chapterIntro}${(state.mission || createMission()).description}，完成后进入下一片星域。`;
+        }
         ui.overlayButton.textContent = "开始任务";
       }
 
@@ -1519,6 +3910,9 @@
       }
 
       function burstAtCell(cell, colors, amount) {
+        if (state.lowDistraction) {
+          amount = Math.max(4, Math.floor(amount * 0.35));
+        }
         const center = cellCenter(cell);
         for (let i = 0; i < amount; i += 1) {
           const angle = Math.random() * Math.PI * 2;
@@ -1528,9 +3922,9 @@
             y: center.y,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
-            life: 24 + Math.random() * 18,
-            maxLife: 42,
-            size: 2 + Math.random() * 3,
+            life: state.lowDistraction ? 16 + Math.random() * 10 : 24 + Math.random() * 18,
+            maxLife: state.lowDistraction ? 28 : 42,
+            size: state.lowDistraction ? 1.4 + Math.random() * 1.8 : 2 + Math.random() * 3,
             color: colors[Math.floor(Math.random() * colors.length)]
           });
         }
@@ -1562,23 +3956,30 @@
       }
 
       function drawBackdrop(time) {
+        const chapter = activeChapter();
         const gradient = ctx.createLinearGradient(0, 0, viewWidth, viewHeight);
-        gradient.addColorStop(0, "#050818");
-        gradient.addColorStop(0.55, "#0b1230");
-        gradient.addColorStop(1, "#141d45");
+        gradient.addColorStop(0, chapter.bg[0]);
+        gradient.addColorStop(0.55, chapter.bg[1]);
+        gradient.addColorStop(1, chapter.bg[2]);
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, viewWidth, viewHeight);
 
-        drawNebula(viewWidth * 0.2, viewHeight * 0.25, Math.min(viewWidth, viewHeight) * 0.52, "rgba(95, 141, 255, 0.2)");
-        drawNebula(viewWidth * 0.82, viewHeight * 0.18, Math.min(viewWidth, viewHeight) * 0.42, "rgba(97, 242, 213, 0.16)");
-        drawNebula(viewWidth * 0.72, viewHeight * 0.84, Math.min(viewWidth, viewHeight) * 0.36, "rgba(255, 122, 182, 0.12)");
+        if (!state.lowDistraction) {
+          drawNebula(viewWidth * 0.2, viewHeight * 0.25, Math.min(viewWidth, viewHeight) * 0.52, chapter.nebula[0]);
+          drawNebula(viewWidth * 0.82, viewHeight * 0.18, Math.min(viewWidth, viewHeight) * 0.42, chapter.nebula[1]);
+          drawNebula(viewWidth * 0.72, viewHeight * 0.84, Math.min(viewWidth, viewHeight) * 0.36, chapter.nebula[2]);
+        } else {
+          drawNebula(viewWidth * 0.5, viewHeight * 0.35, Math.min(viewWidth, viewHeight) * 0.48, chapter.nebula[0].replace(/0\.\d+\)/, "0.045)"));
+        }
 
         ctx.save();
-        for (const star of stars) {
+        const starStep = state.lowDistraction ? 3 : 1;
+        for (let i = 0; i < stars.length; i += starStep) {
+          const star = stars[i];
           const x = (star.x * viewWidth + time * star.speed) % viewWidth;
           const y = star.y * viewHeight;
-          const twinkle = 0.45 + Math.sin(time * 0.003 + star.phase) * 0.35;
-          ctx.globalAlpha = clamp(twinkle, 0.18, 0.9);
+          const twinkle = state.lowDistraction ? 0.12 : 0.18 + Math.sin(time * 0.002 + star.phase) * 0.08;
+          ctx.globalAlpha = clamp(twinkle, 0.06, state.lowDistraction ? 0.16 : 0.32);
           ctx.fillStyle = "#ffffff";
           ctx.beginPath();
           ctx.arc(x, y, star.size, 0, Math.PI * 2);
@@ -1596,8 +3997,9 @@
       }
 
       function drawBoard() {
+        const chapter = activeChapter();
         ctx.save();
-        ctx.strokeStyle = "rgba(143, 199, 255, 0.36)";
+        ctx.strokeStyle = chapter.board;
         ctx.lineWidth = 2;
         roundRect(board.x - 4, board.y - 4, board.w + 8, board.h + 8, 10);
         ctx.stroke();
@@ -1668,28 +4070,79 @@
         }
 
         const center = cellCenter(state.powerUp);
-        const pulse = 0.88 + Math.sin(time * 0.008) * 0.12;
+        const pulse = state.lowDistraction ? 0.96 : 0.88 + Math.sin(time * 0.008) * 0.12;
         const size = board.cell * 0.34 * pulse;
+        const meta = POWER_UPS[state.powerUp.type] || POWER_UPS.shield;
+        const primary = meta.colors[0];
+        const secondary = meta.colors[1] || "#ffffff";
 
         ctx.save();
         ctx.translate(center.x, center.y);
-        ctx.shadowColor = state.powerUp.type === "shield" ? "#61f2d5" : "#ffd166";
-        ctx.shadowBlur = 18;
+        ctx.shadowColor = primary;
+        ctx.shadowBlur = state.lowDistraction ? 5 : 18;
 
         if (state.powerUp.type === "shield") {
-          ctx.strokeStyle = "#61f2d5";
+          ctx.strokeStyle = primary;
           ctx.lineWidth = Math.max(2, board.cell * 0.07);
           polygon(0, 0, size, 6, -Math.PI / 6);
           ctx.stroke();
           ctx.fillStyle = "rgba(97, 242, 213, 0.18)";
           ctx.fill();
-        } else {
+        } else if (state.powerUp.type === "warp") {
           ctx.rotate(Math.PI / 4);
-          ctx.fillStyle = "#ffd166";
+          ctx.fillStyle = primary;
           ctx.fillRect(-size * 0.55, -size * 0.55, size * 1.1, size * 1.1);
           ctx.strokeStyle = "#ffffff";
           ctx.lineWidth = 2;
           ctx.strokeRect(-size * 0.55, -size * 0.55, size * 1.1, size * 1.1);
+        } else if (state.powerUp.type === "magnet") {
+          ctx.strokeStyle = primary;
+          ctx.lineWidth = Math.max(3, board.cell * 0.1);
+          ctx.beginPath();
+          ctx.arc(0, 0, size * 0.78, Math.PI * 0.18, Math.PI * 1.82);
+          ctx.stroke();
+          ctx.fillStyle = secondary;
+          ctx.fillRect(-size * 0.62, size * 0.42, size * 0.22, size * 0.34);
+          ctx.fillRect(size * 0.4, size * 0.42, size * 0.22, size * 0.34);
+        } else if (state.powerUp.type === "slow") {
+          ctx.strokeStyle = primary;
+          ctx.lineWidth = Math.max(2, board.cell * 0.08);
+          ctx.beginPath();
+          ctx.arc(0, 0, size * 0.86, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.strokeStyle = secondary;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(0, -size * 0.52);
+          ctx.moveTo(0, 0);
+          ctx.lineTo(size * 0.42, size * 0.18);
+          ctx.stroke();
+        } else if (state.powerUp.type === "clear") {
+          ctx.fillStyle = primary;
+          ctx.beginPath();
+          ctx.moveTo(0, -size);
+          ctx.lineTo(size * 0.24, -size * 0.24);
+          ctx.lineTo(size, 0);
+          ctx.lineTo(size * 0.24, size * 0.24);
+          ctx.lineTo(0, size);
+          ctx.lineTo(-size * 0.24, size * 0.24);
+          ctx.lineTo(-size, 0);
+          ctx.lineTo(-size * 0.24, -size * 0.24);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = secondary;
+          ctx.beginPath();
+          ctx.arc(0, 0, size * 0.22, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (state.powerUp.type === "double") {
+          ctx.strokeStyle = primary;
+          ctx.lineWidth = Math.max(2, board.cell * 0.07);
+          ctx.beginPath();
+          ctx.arc(-size * 0.28, 0, size * 0.45, 0, Math.PI * 2);
+          ctx.arc(size * 0.28, 0, size * 0.45, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.fillStyle = "rgba(255, 230, 109, 0.2)";
+          ctx.fill();
         }
         ctx.restore();
       }
@@ -1701,9 +4154,11 @@
           ctx.save();
           ctx.translate(center.x, center.y);
           ctx.rotate(Math.sin(time * 0.001 + rock.seed) * 0.35);
+          ctx.shadowColor = "rgba(255, 122, 64, 0.48)";
+          ctx.shadowBlur = Math.max(6, board.cell * 0.25);
           ctx.fillStyle = rock.tint;
-          ctx.strokeStyle = "rgba(255, 255, 255, 0.28)";
-          ctx.lineWidth = 1.4;
+          ctx.strokeStyle = "#ffd166";
+          ctx.lineWidth = Math.max(1.6, board.cell * 0.08);
           ctx.beginPath();
           for (let i = 0; i < 9; i += 1) {
             const angle = (i / 9) * Math.PI * 2;
@@ -1719,6 +4174,11 @@
           ctx.closePath();
           ctx.fill();
           ctx.stroke();
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = "rgba(255, 231, 180, 0.7)";
+          ctx.beginPath();
+          ctx.arc(-radius * 0.24, -radius * 0.22, radius * 0.18, 0, Math.PI * 2);
+          ctx.fill();
           ctx.restore();
         }
       }
@@ -1729,7 +4189,7 @@
         }
 
         ctx.save();
-        if (state.flash > 0) {
+        if (state.flash > 0 && !state.lowDistraction) {
           ctx.globalAlpha = 0.55 + Math.sin(time * 0.04) * 0.25;
         }
 
@@ -1760,12 +4220,13 @@
       function drawShipModule(cell, direction, index) {
         const center = cellCenter(cell);
         const size = board.cell * 0.72;
+        const skin = activeSkin().colors;
         ctx.save();
         ctx.translate(center.x, center.y);
         ctx.rotate(angleFromDirection(direction));
-        ctx.shadowColor = "rgba(97, 242, 213, 0.5)";
+        ctx.shadowColor = skin.glow;
         ctx.shadowBlur = 8;
-        ctx.fillStyle = index % 2 === 0 ? "#8fc7ff" : "#61f2d5";
+        ctx.fillStyle = index % 2 === 0 ? skin.bodyAlt : skin.body;
         roundRect(-size * 0.42, -size * 0.24, size * 0.84, size * 0.48, size * 0.18);
         ctx.fill();
         ctx.shadowBlur = 0;
@@ -1782,6 +4243,7 @@
         const center = cellCenter(cell);
         const size = board.cell * 0.88;
         const flamePulse = 0.85 + Math.sin(time * 0.022) * 0.15;
+        const skin = activeSkin().colors;
 
         ctx.save();
         ctx.translate(center.x, center.y);
@@ -1790,8 +4252,8 @@
         if (state.status === "running") {
           const flame = ctx.createLinearGradient(-size * 0.7, 0, -size * 0.28, 0);
           flame.addColorStop(0, "rgba(255, 107, 122, 0)");
-          flame.addColorStop(0.36, "#ff6b7a");
-          flame.addColorStop(1, "#ffd166");
+          flame.addColorStop(0.36, skin.flameA);
+          flame.addColorStop(1, skin.flameB);
           ctx.fillStyle = flame;
           ctx.beginPath();
           ctx.moveTo(-size * 0.68 * flamePulse, 0);
@@ -1801,11 +4263,11 @@
           ctx.fill();
         }
 
-        ctx.fillStyle = "#eaf8ff";
+        ctx.fillStyle = skin.hull;
         roundRect(-size * 0.34, -size * 0.23, size * 0.62, size * 0.46, size * 0.17);
         ctx.fill();
 
-        ctx.fillStyle = "#61f2d5";
+        ctx.fillStyle = skin.nose;
         ctx.beginPath();
         ctx.moveTo(size * 0.48, 0);
         ctx.lineTo(size * 0.18, -size * 0.27);
@@ -1813,7 +4275,7 @@
         ctx.closePath();
         ctx.fill();
 
-        ctx.fillStyle = "#ffd166";
+        ctx.fillStyle = skin.wing;
         ctx.beginPath();
         ctx.moveTo(-size * 0.12, -size * 0.22);
         ctx.lineTo(-size * 0.42, -size * 0.42);
@@ -1831,7 +4293,7 @@
         ctx.beginPath();
         ctx.arc(size * 0.04, 0, size * 0.13, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = "#8fc7ff";
+        ctx.fillStyle = skin.window;
         ctx.beginPath();
         ctx.arc(size * 0.07, -size * 0.03, size * 0.06, 0, Math.PI * 2);
         ctx.fill();
@@ -1939,6 +4401,18 @@
         }
       });
 
+      window.addEventListener("beforeinstallprompt", (event) => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        updateHud();
+      });
+
+      window.addEventListener("appinstalled", () => {
+        deferredInstallPrompt = null;
+        updateHud();
+        showToast("安装完成");
+      });
+
       document.querySelectorAll("button").forEach((button) => {
         button.addEventListener("pointerdown", () => playFeedback("click"));
       });
@@ -1984,13 +4458,36 @@
           startGame();
         }
       });
+      ui.posterButton.addEventListener("click", openPoster);
+      ui.sharePosterButton.addEventListener("click", sharePoster);
+      ui.downloadPosterButton.addEventListener("click", downloadPoster);
+      ui.closePosterButton.addEventListener("click", closePoster);
       ui.pauseButton.addEventListener("click", togglePause);
       ui.rulesButton.addEventListener("click", openRules);
       ui.soundButton.addEventListener("click", toggleSound);
       ui.closeRulesButton.addEventListener("click", closeRules);
+      ui.playerButton.addEventListener("click", cyclePlayer);
+      ui.addPlayerButton.addEventListener("click", addPlayer);
+      ui.installButton.addEventListener("click", installApp);
+      ui.shieldDownButton.addEventListener("click", () => adjustInitialShields(-1));
+      ui.shieldUpButton.addEventListener("click", () => adjustInitialShields(1));
+      ui.tutorialButton.addEventListener("click", toggleTutorial);
+      ui.newbieButton.addEventListener("click", toggleNewbieProtection);
+      ui.defaultWallButton.addEventListener("click", toggleDefaultWallMode);
+      ui.missionModeButton.addEventListener("click", cycleMissionMode);
+      ui.difficultyButton.addEventListener("click", cycleDifficulty);
+      ui.skinButton.addEventListener("click", cycleSkin);
+      ui.calmButton.addEventListener("click", toggleLowDistraction);
+      ui.dailyButton.addEventListener("click", toggleDailyMode);
+      ui.shareButton.addEventListener("click", shareGame);
       ui.rulesPanel.addEventListener("click", (event) => {
         if (event.target === ui.rulesPanel) {
           closeRules();
+        }
+      });
+      ui.posterPanel.addEventListener("click", (event) => {
+        if (event.target === ui.posterPanel) {
+          closePoster();
         }
       });
       ui.wallButton.addEventListener("click", toggleWallMode);
@@ -2001,6 +4498,12 @@
 
       document.addEventListener("touchmove", (event) => {
         // Prevent page panning in mobile browsers and WeChat WebView.
+        if (!ui.rulesPanel.hidden && ui.rulesPanel.contains(event.target)) {
+          return;
+        }
+        if (!ui.posterPanel.hidden && ui.posterPanel.contains(event.target)) {
+          return;
+        }
         event.preventDefault();
       }, { passive: false });
       document.addEventListener("gesturestart", (event) => {
@@ -2010,6 +4513,7 @@
       window.addEventListener("resize", handleViewportChange);
       window.addEventListener("orientationchange", handleViewportChange);
       window.addEventListener("pageshow", handleViewportChange);
+      registerServiceWorker();
       loadPreferences();
       setAppHeight();
       resizeCanvas();
