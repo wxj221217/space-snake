@@ -1131,7 +1131,7 @@
 
       <div class="stat">
         <span>能量</span>
-        <strong id="powerText">护盾 2/5</strong>
+        <strong id="powerText">护盾 2/3</strong>
       </div>
 
       <div class="action-group">
@@ -1180,7 +1180,7 @@
               <span>初始护盾</span>
               <div class="shield-stepper" aria-label="初始护盾设置">
                 <button class="stepper-button" id="shieldDownButton" type="button" aria-label="减少初始护盾">−</button>
-                <strong class="shield-value" id="shieldConfigText">2/5</strong>
+                <strong class="shield-value" id="shieldConfigText">2/3</strong>
                 <button class="stepper-button" id="shieldUpButton" type="button" aria-label="增加初始护盾">+</button>
               </div>
             </div>
@@ -1231,7 +1231,7 @@
             <li>撞墙、撞自己或小行星：消耗 1 层护盾。</li>
             <li>护盾消耗后：1 秒后重新出发。</li>
             <li>护盾为 0 再撞击：任务结束。</li>
-            <li>初始护盾可调，最多 5 层，道具可补给。</li>
+            <li>初始护盾为 2 层，最多 3 层，道具可补给。</li>
             <li>道具包括护盾、曲速、磁吸、减速、清障、双倍分。</li>
             <li>穿墙开：飞出边界会从另一侧回来。</li>
             <li>每日挑战：当天地图和任务固定，可挑战今日最佳。</li>
@@ -1348,7 +1348,7 @@
 
       const COLS = 36;
       const ROWS = 26;
-      const SHIELD_MAX = 5;
+      const SHIELD_MAX = 3;
       const START_DELAY_MS = 1000;
       const RECORD_KEY = "spaceSnake.records.v1";
       const SOUND_KEY = "spaceSnake.sound.v1";
