@@ -1350,6 +1350,9 @@
       const ROWS = 26;
       const SHIELD_MAX = 3;
       const START_DELAY_MS = 1000;
+      const POWER_EFFECT_MS = 30000;
+      const WARP_REWARD_MS = 2000;
+      const DOUBLE_REWARD_MS = 4000;
       const RECORD_KEY = "spaceSnake.records.v1";
       const SOUND_KEY = "spaceSnake.sound.v1";
       const SHIELD_CONFIG_KEY = "spaceSnake.initialShields.v1";
@@ -1430,7 +1433,7 @@
           reward: {
             label: "火星燃料",
             type: "道具",
-            description: "曲速推进持续 +2 回合。",
+            description: "曲速推进持续 +2 秒。",
             bonus: "warp_plus"
           }
         },
@@ -1493,7 +1496,7 @@
           reward: {
             label: "黑洞王牌",
             type: "称号",
-            description: "双倍分数持续 +4 回合。",
+            description: "双倍分数持续 +4 秒。",
             title: "黑洞王牌",
             bonus: "double_plus"
           }
@@ -1652,10 +1655,11 @@
         missionProgress: 0,
         crashReason: null,
         wallMode: false,
-        warpTicks: 0,
-        magnetTicks: 0,
-        slowTicks: 0,
-        doubleTicks: 0,
+        warpUntil: 0,
+        magnetUntil: 0,
+        slowUntil: 0,
+        doubleUntil: 0,
+        clearUntil: 0,
         direction: DIRECTIONS.right,
         nextDirection: DIRECTIONS.right,
         ship: [],
@@ -1972,8 +1976,8 @@
         const config = DIFFICULTY_CONFIG[state.difficulty];
         const chapter = activeChapter();
         const base = Math.max(88, 380 + config.speedBonus + chapter.speedDelta - (state.level - 1) * 22);
-        let interval = state.warpTicks > 0 ? base * 0.72 : base;
-        if (state.slowTicks > 0) {
+        let interval = effectActive(state.warpUntil) ? base * 0.72 : base;
+        if (effectActive(state.slowUntil)) {
           interval *= 1.35;
         }
         if (newbieProtectionActive()) {
@@ -2243,12 +2247,25 @@
         return Math.min(SHIELD_MAX, state.initialShields + (rewardBonusActive("shield_start") ? 1 : 0));
       }
 
+      function effectActive(until) {
+        return until > performance.now();
+      }
+
+      function effectSeconds(until) {
+        return Math.max(0, Math.ceil((until - performance.now()) / 1000));
+      }
+
+      function powerDuration(extraMs = 0) {
+        return performance.now() + POWER_EFFECT_MS + extraMs;
+      }
+
       function activePowerText() {
         if (newbieProtectionActive()) return `保护 ${Math.ceil((state.protectionUntil - performance.now()) / 1000)}s`;
-        if (state.doubleTicks > 0) return `双倍 ${state.doubleTicks}`;
-        if (state.magnetTicks > 0) return `磁吸 ${state.magnetTicks}`;
-        if (state.slowTicks > 0) return `减速 ${state.slowTicks}`;
-        if (state.warpTicks > 0) return `曲速 ${state.warpTicks}`;
+        if (effectActive(state.clearUntil)) return `清障 ${effectSeconds(state.clearUntil)}s`;
+        if (effectActive(state.doubleUntil)) return `双倍 ${effectSeconds(state.doubleUntil)}s`;
+        if (effectActive(state.magnetUntil)) return `磁吸 ${effectSeconds(state.magnetUntil)}s`;
+        if (effectActive(state.slowUntil)) return `减速 ${effectSeconds(state.slowUntil)}s`;
+        if (effectActive(state.warpUntil)) return `曲速 ${effectSeconds(state.warpUntil)}s`;
         return `护盾 ${state.shields}/${SHIELD_MAX}`;
       }
 
@@ -2570,10 +2587,11 @@
         state.dailyNewRecord = false;
         state.shields = effectiveInitialShields();
         state.wallMode = state.defaultWallMode;
-        state.warpTicks = 0;
-        state.magnetTicks = 0;
-        state.slowTicks = 0;
-        state.doubleTicks = 0;
+        state.warpUntil = 0;
+        state.magnetUntil = 0;
+        state.slowUntil = 0;
+        state.doubleUntil = 0;
+        state.clearUntil = 0;
         state.completedMissionType = null;
         state.crashReason = null;
         state.levelSummary = null;
@@ -3427,6 +3445,10 @@
 
       function generateObstacles() {
         state.obstacles = [];
+        if (effectActive(state.clearUntil)) {
+          return;
+        }
+
         const config = DIFFICULTY_CONFIG[state.difficulty];
         const chapter = activeChapter();
         let count = Math.min(14, Math.max(0, state.level - 1 + Math.floor(state.level / 3) + config.obstacleBonus + chapter.obstacleBonus));
@@ -3489,20 +3511,21 @@
           state.shields = Math.min(SHIELD_MAX, state.shields + 1);
           state.score += meta.score;
         } else if (type === "warp") {
-          state.warpTicks = rewardBonusActive("warp_plus") ? 20 : 18;
+          state.warpUntil = powerDuration(rewardBonusActive("warp_plus") ? WARP_REWARD_MS : 0);
           state.score += meta.score;
         } else if (type === "magnet") {
-          state.magnetTicks = 22;
+          state.magnetUntil = powerDuration();
           state.score += meta.score;
         } else if (type === "slow") {
-          state.slowTicks = 26;
+          state.slowUntil = powerDuration();
           state.score += meta.score;
         } else if (type === "clear") {
           const cleared = state.obstacles.length;
+          state.clearUntil = powerDuration();
           state.obstacles = [];
           state.score += meta.score + cleared * 25;
         } else if (type === "double") {
-          state.doubleTicks = rewardBonusActive("double_plus") ? 28 : 24;
+          state.doubleUntil = powerDuration(rewardBonusActive("double_plus") ? DOUBLE_REWARD_MS : 0);
           state.score += meta.score;
         }
 
@@ -3513,7 +3536,7 @@
       }
 
       function pullPlanetTowardShip() {
-        if (!state.planet || state.magnetTicks <= 0) {
+        if (!state.planet || !effectActive(state.magnetUntil)) {
           return;
         }
 
@@ -3567,7 +3590,7 @@
         state.ship.unshift(next);
 
         if (willGrow) {
-          const bonus = (state.warpTicks > 0 ? 1.5 : 1) * (state.doubleTicks > 0 ? 2 : 1);
+          const bonus = (effectActive(state.warpUntil) ? 1.5 : 1) * (effectActive(state.doubleUntil) ? 2 : 1);
           state.score += Math.round((100 + state.level * 20) * bonus);
           state.totalCollected += 1;
           if (state.mission.type === "collect" || state.mission.type === "clean" || state.mission.type === "wall") {
@@ -3589,21 +3612,8 @@
           collectPowerUp();
         }
 
-        if (state.warpTicks > 0) {
-          state.warpTicks -= 1;
-        }
-
-        if (state.magnetTicks > 0) {
-          state.magnetTicks -= 1;
+        if (effectActive(state.magnetUntil)) {
           pullPlanetTowardShip();
-        }
-
-        if (state.slowTicks > 0) {
-          state.slowTicks -= 1;
-        }
-
-        if (state.doubleTicks > 0) {
-          state.doubleTicks -= 1;
         }
 
         if (state.powerUp) {
@@ -3713,7 +3723,7 @@
         state.levelSummary = createLevelSummary();
         state.level += 1;
         state.shields = Math.min(SHIELD_MAX, state.shields + 1);
-        state.warpTicks = 0;
+        state.warpUntil = 0;
         state.powerUp = null;
         state.planet = null;
         generateObstacles();
@@ -3742,7 +3752,7 @@
 
       function statusLabel() {
         if (state.status === "running") {
-          return state.warpTicks > 0 ? "曲速推进" : "任务进行中";
+          return effectActive(state.warpUntil) ? "曲速推进" : "任务进行中";
         }
 
         if (state.status === "launching") {
@@ -3943,6 +3953,30 @@
 
         if (state.flash > 0) {
           state.flash -= 1;
+        }
+      }
+
+      function updateTimedPowerUps() {
+        const now = performance.now();
+        let hudNeedsUpdate = false;
+        if (state.clearUntil > 0 && state.clearUntil <= now) {
+          state.clearUntil = 0;
+          generateObstacles();
+          hudNeedsUpdate = true;
+          if (state.status === "running") {
+            showToast("陨石重新出现");
+          }
+        }
+
+        ["warpUntil", "magnetUntil", "slowUntil", "doubleUntil"].forEach((key) => {
+          if (state[key] > 0 && state[key] <= now) {
+            state[key] = 0;
+            hudNeedsUpdate = true;
+          }
+        });
+
+        if (hudNeedsUpdate) {
+          updateHud();
         }
       }
 
@@ -4341,6 +4375,7 @@
       }
 
       function frame(time) {
+        updateTimedPowerUps();
         if (state.status === "running" && time - lastMove >= moveInterval()) {
           moveShip();
           lastMove = time;

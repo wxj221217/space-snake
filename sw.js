@@ -1,4 +1,4 @@
-const CACHE_NAME = "space-snake-pwa-v4";
+const CACHE_NAME = "space-snake-pwa-v5";
 const ASSETS = [
   "./",
   "./index.html",
