@@ -1131,7 +1131,7 @@
 
       <div class="stat">
         <span>能量</span>
-        <strong id="powerText">护盾 2/3</strong>
+        <strong id="powerText">护盾 0/3</strong>
       </div>
 
       <div class="action-group">
@@ -1180,7 +1180,7 @@
               <span>初始护盾</span>
               <div class="shield-stepper" aria-label="初始护盾设置">
                 <button class="stepper-button" id="shieldDownButton" type="button" aria-label="减少初始护盾">−</button>
-                <strong class="shield-value" id="shieldConfigText">2/3</strong>
+                <strong class="shield-value" id="shieldConfigText">0/3</strong>
                 <button class="stepper-button" id="shieldUpButton" type="button" aria-label="增加初始护盾">+</button>
               </div>
             </div>
@@ -1231,7 +1231,7 @@
             <li>撞墙、撞自己或小行星：消耗 1 层护盾。</li>
             <li>护盾消耗后：1 秒后重新出发。</li>
             <li>护盾为 0 再撞击：任务结束。</li>
-            <li>初始护盾为 2 层，最多 3 层，道具可补给。</li>
+            <li>初始护盾默认 0 层，可调到最多 3 层，道具可补给。</li>
             <li>道具包括护盾、曲速、磁吸、减速、清障、双倍分。</li>
             <li>穿墙开：飞出边界会从另一侧回来。</li>
             <li>每日挑战：当天地图和任务固定，可挑战今日最佳。</li>
@@ -1625,8 +1625,8 @@
         soundEnabled: true,
         lowDistraction: false,
         newbieProtection: true,
-        initialShields: 2,
-        shields: 2,
+        initialShields: 0,
+        shields: 0,
         tutorialEnabled: true,
         defaultWallMode: false,
         missionMode: "mixed",
@@ -2053,7 +2053,8 @@
         state.soundEnabled = savedSound !== "off";
         state.lowDistraction = savedLowDistraction === "on";
         state.newbieProtection = savedNewbieProtection !== "off";
-        state.initialShields = clamp(Number(savedInitialShields) || 2, 1, SHIELD_MAX);
+        const parsedInitialShields = savedInitialShields === null ? 0 : Number(savedInitialShields);
+        state.initialShields = clamp(Number.isFinite(parsedInitialShields) ? parsedInitialShields : 0, 0, SHIELD_MAX);
         state.tutorialEnabled = savedTutorial !== "off";
         state.defaultWallMode = savedDefaultWall === "on";
         state.missionMode = MISSION_MODES.includes(savedMissionMode) ? savedMissionMode : "mixed";
@@ -2652,7 +2653,7 @@
       }
 
       function adjustInitialShields(delta) {
-        state.initialShields = clamp(state.initialShields + delta, 1, SHIELD_MAX);
+        state.initialShields = clamp(state.initialShields + delta, 0, SHIELD_MAX);
         if (state.status === "ready") {
           state.shields = effectiveInitialShields();
         }
@@ -3222,7 +3223,7 @@
       }
 
       function tutorialText() {
-        return "滑动或点方向键驾驶飞船。收集星球完成任务，护盾能救你一次，设置里可以调护盾和任务模式。";
+        return "滑动或点方向键驾驶飞船。收集星球完成任务，有护盾时能救你一次，设置里可以调护盾和任务模式。";
       }
 
       function openRules() {
